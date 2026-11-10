@@ -180,7 +180,7 @@ def _run(args) -> int:
     else:
         end_text = f", ideal line to {bd.end.isoformat()}" if bd.end and any(v is not None for v in bd.ideal) else ""
         derived = f" ({bd.derived_weeks} older week(s) derived from progress)" if bd.derived_weeks else ""
-        print(f"Burndown:     {bd.remaining_h:,.0f} h of {bd.total_h:,.0f} h remaining{end_text}{derived}")
+        print(f"Burndown:     {bd.remaining_pct:.0f} % open ({bd.remaining_h:,.0f} h of {bd.total_h:,.0f} h){end_text}{derived}")
 
     if args.check or args.verbose:
         _print_versions(versions, prev)

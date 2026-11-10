@@ -172,7 +172,7 @@ def _trend_slide(deck: Deck, layout: str, report: Report, footer: str) -> None:
 
 
 def _burndown_slide(deck: Deck, layout: str, report: Report, footer: str) -> None:
-    """R-OUT-10: remaining effort of all tasks per week, with the ideal line to the latest Due."""
+    """R-OUT-10: open share of the effort of all tasks per week (%), ideal line to the latest Due."""
     bd = report.burndown
     slide = deck.add_slide(layout, "content", footer)
     _title(slide, labels.BURNDOWN_TITLE)
@@ -181,7 +181,7 @@ def _burndown_slide(deck: Deck, layout: str, report: Report, footer: str) -> Non
     slide.add_line_chart(
         chart, bd.labels,
         [(labels.BURNDOWN_ACTUAL, bd.actual), (labels.BURNDOWN_IDEAL, bd.ideal)],
-        y_max=None, y_step=None, value_format='#,##0" h"',
+        y_max=100, y_step=20,
         styles=[{"color": "accent1"}, {"color": "#7F7F7F", "dash": True, "marker": False}],
     )
     slide.add_textbox(

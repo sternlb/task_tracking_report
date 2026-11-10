@@ -87,9 +87,17 @@ class BuildTest(unittest.TestCase):
         }
         bd = burndown.build(snaps, self.current(ts), 12, ts)
         self.assertEqual(bd.keys[:3], ["2026-W44", "2026-W45", "2026-W46"])
-        self.assertEqual(bd.actual[:3], [180.0, 155.0, 100.0])
+        # in % of the total: W44 180 of 200 h (no stored total -> today's), W45 155 of 200 h, today 100 of 200 h
+        self.assertEqual(bd.actual[:3], [90.0, 77.5, 50.0])
         self.assertEqual(bd.derived_weeks, 1)
-        self.assertEqual((bd.total_h, bd.remaining_h), (200, 100))
+        self.assertEqual((bd.total_h, bd.remaining_h, bd.remaining_pct), (200, 100, 50.0))
+
+    def test_percent_uses_the_total_of_that_week(self):
+        ts = tasks()
+        snaps = {"2026-W45": snap_at(D(2026, 11, 3), remaining=120.0)}
+        snaps["2026-W45"].total_h = 160.0  # smaller scope last week
+        bd = burndown.build(snaps, self.current(ts), 12, ts)
+        self.assertEqual(bd.actual[:2], [75.0, 50.0])
 
     def test_future_weeks_and_ideal_line(self):
         ts = tasks()
@@ -98,9 +106,9 @@ class BuildTest(unittest.TestCase):
         self.assertEqual(bd.end, D(2026, 12, 18))  # latest Due of the tasks with an estimate
         # past weeks with a snapshot (W45 has none), then the future up to the week of the latest Due
         self.assertEqual(bd.keys, ["2026-W44", "2026-W46", "2026-W47", "2026-W48", "2026-W49", "2026-W50", "2026-W51"])
-        self.assertEqual(bd.actual[:2], [180.0, 100.0])
+        self.assertEqual(bd.actual[:2], [90.0, 50.0])
         self.assertTrue(all(v is None for v in bd.actual[2:]))  # future: no actual values
-        self.assertEqual(bd.ideal[0], 180.0)  # starts at the first actual value
+        self.assertEqual(bd.ideal[0], 90.0)  # starts at the first actual value
         self.assertEqual(bd.ideal[-1], 0.0)  # reaches 0 h in the week of the latest Due
         self.assertEqual(bd.ideal, sorted(bd.ideal, reverse=True))
         self.assertEqual(bd.labels[0], "CW 44")
@@ -150,11 +158,15 @@ class SlideTest(unittest.TestCase):
         slides = pkg.related(pkg.main_part(), opc.RT_SLIDE)
         third = pkg.parts[slides[2]].decode()
         self.assertIn(labels.BURNDOWN_TITLE, third)
-        self.assertIn("100 h of 200 h remaining", third)
+        self.assertIn("Open share of the total effort of all tasks: 50 %", third)
         self.assertIn("(18 Dec 2026)", third)
-        chart = pkg.related(slides[2], opc.RT_CHART)[0]
-        self.assertIn(labels.BURNDOWN_IDEAL, pkg.parts[chart].decode())
-        self.assertIn("100 h of 200 h", r.burndown_note)
+        chart = pkg.parts[pkg.related(slides[2], opc.RT_CHART)[0]].decode()
+        self.assertIn(labels.BURNDOWN_IDEAL, chart)
+        self.assertIn('<c:max val="100"/>', chart)
+        self.assertIn("0&quot; %&quot;", chart)
+        # no hours for the customer: neither on the slide nor in the chart
+        self.assertNotRegex(third + chart, r"\d h\b|&quot; h&quot;|\(h\)")
+        self.assertNotIn(" h", r.burndown_note)
 
     def test_no_burndown_slide_without_estimates(self):
         ts = [Task(id="x", title="x", version="1", progress_manual=10)]

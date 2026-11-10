@@ -1,12 +1,14 @@
 """Burndown of the remaining effort over all tasks — R-OUT-10.
 
-Actual line: remaining hours of all tasks with an estimate, per week with a
-snapshot (the same weeks as the progress chart). Ideal line: straight from the
-first actual value down to 0 h at the latest Due date; the axis runs on into
-the future up to that week (at most 26 weeks ahead).
+Actual line: the open share of the effort of all tasks with an estimate, in %
+(remaining hours ÷ total hours of that week), per week with a snapshot (the
+same weeks as the progress chart). Hours are never shown to the customer; they
+only appear in the console. Ideal line: straight from the first actual value
+down to 0 % at the latest Due date; the axis runs on into the future up to that
+week (at most 26 weeks ahead).
 
-Snapshots written before 0.9.1 have no stored effort. For them the remaining
-effort is derived from the stored task progress and today's estimates.
+Snapshots written before 0.9.1 have no stored effort. For them the open share
+is derived from the stored task progress and today's estimates.
 """
 
 from __future__ import annotations
@@ -23,14 +25,20 @@ MAX_FUTURE_WEEKS = 26
 
 @dataclass
 class Burndown:
+    """Values in % of the total effort (open share); hours only for the console."""
+
     keys: List[str]  # ISO weeks on the x-axis, past and future
     labels: List[str]
-    actual: List[Optional[float]]  # None for future weeks
-    ideal: List[Optional[float]]
-    total_h: float  # this week
-    remaining_h: float  # this week
+    actual: List[Optional[float]]  # open effort in % of that week's total; None for future weeks
+    ideal: List[Optional[float]]  # %
+    total_h: float  # this week, hours (console only, never on a slide)
+    remaining_h: float  # this week, hours (console only)
     end: Optional[dt.date]  # latest Due of the tasks with an estimate
     derived_weeks: int = 0  # older snapshots without stored effort
+
+    @property
+    def remaining_pct(self) -> float:
+        return self.remaining_h / self.total_h * 100 if self.total_h else 0.0
 
 
 def _monday(key: str) -> dt.date:
@@ -40,11 +48,22 @@ def _monday(key: str) -> dt.date:
     return jan4 - dt.timedelta(days=jan4.weekday()) + dt.timedelta(weeks=week - 1)
 
 
-def _from_snapshot(snap: Snapshot, estimates: Dict[str, float]) -> Optional[float]:
+def _pct(remaining: Optional[float], total: Optional[float]) -> Optional[float]:
+    if remaining is None or not total:
+        return None
+    return max(0.0, min(100.0, remaining / total * 100))
+
+
+def _from_snapshot(snap: Snapshot, estimates: Dict[str, float], current_total: float) -> Optional[float]:
+    """Open effort of a past week in % of that week's total effort."""
     if snap.remaining_h is not None:
-        return snap.remaining_h
-    values = [estimates[tid] * (1 - (t.progress or 0.0) / 100.0) for tid, t in snap.tasks.items() if tid in estimates]
-    return sum(values) if values else None
+        return _pct(snap.remaining_h, snap.total_h or current_total)
+    known = [(estimates[tid], t.progress) for tid, t in snap.tasks.items() if tid in estimates]
+    if not known:
+        return None
+    total = sum(e for e, _ in known)
+    remaining = sum(e * (1 - (p or 0.0) / 100.0) for e, p in known)
+    return _pct(remaining, total)
 
 
 def build(snapshots: Dict[str, Snapshot], current: Snapshot, weeks: int, tasks: Sequence[Task]) -> Optional[Burndown]:
@@ -64,11 +83,11 @@ def build(snapshots: Dict[str, Snapshot], current: Snapshot, weeks: int, tasks: 
     for k in past:
         snap = merged[k]
         if k == current.week:
-            actual.append(remaining)
+            actual.append(_pct(remaining, total))
             continue
         if snap.remaining_h is None:
             derived += 1
-        actual.append(_from_snapshot(snap, estimates))
+        actual.append(_from_snapshot(snap, estimates, total))
 
     future: List[str] = []
     if end is not None:

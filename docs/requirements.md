@@ -176,14 +176,15 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   the input Excel. An existing file is replaced only with `--force`; otherwise a suffix is
   added.
 
-- **R-OUT-10 (M)** A burndown slide shall show the remaining effort in hours of all
-  tasks that have an estimate (remaining of a task = estimate × (1 − progress); no
-  progress counts as not started) for the same weeks as the progress chart. It also
-  shows an ideal line from the first value down to 0 h in the week of the latest Due
-  date, with the axis running into the future up to that week (at most 26 weeks).
-  Without any estimate the slide is left out. Snapshots store total and remaining
-  hours; for older snapshots the value is derived from the stored task progress and
-  today's estimates (decided 2026-11-10).
+- **R-OUT-10 (M)** A burndown slide shall show the **open share of the total effort in %**
+  of all tasks that have an estimate: open hours ÷ total hours of that week (open
+  hours of a task = estimate × (1 − progress); no progress counts as not started). It
+  covers the same weeks as the progress chart. It also shows an ideal line from the
+  first value down to 0 % in the week of the latest Due date, with the axis running
+  into the future up to that week (at most 26 weeks). **No hours on the slide** (decided
+  2026-11-10); the console shows them for the report author. Without any estimate the
+  slide is left out. Snapshots store total and remaining hours; for older snapshots the
+  value is derived from the stored task progress and today's estimates.
 
 ### 4.5 Operation
 

@@ -46,7 +46,8 @@ statusreport/
   loader.py          input workbook -> tasks + issues (settings, mapping, import merge by ID)
   calc.py            progress, expected %, traffic lights, version aggregation (R-CA-*)
   history.py         weekly JSON snapshots in history/ (incl. effort hours), previous week, trend series (R-HI-*)
-  burndown.py        remaining effort of all tasks per week + ideal line to the latest Due (R-OUT-10)
+  burndown.py        open share of the total effort (%) per week + ideal line to the latest Due (R-OUT-10);
+                     hours stay internal and in the console, never on a customer slide
   report.py          presentation-neutral report model: slide texts, rows, "(50 %)"/"(new)"/"(–)"
   render.py          report model -> slides on a Deck (table styling, lights, legend, chart)
   output.py          output file name, " (2)" suffix instead of overwriting, template path

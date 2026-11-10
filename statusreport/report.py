@@ -147,7 +147,7 @@ def build_report(
         report.tables.append(VersionTable(vs.name, total, rows))
     if burndown is not None:
         report.burndown = burndown
-        note = labels.BURNDOWN_NOTE.format(remaining=burndown.remaining_h, total=burndown.total_h)
+        note = labels.BURNDOWN_NOTE.format(pct=burndown.remaining_pct)  # no hours for the customer
         if burndown.end is not None and any(v is not None for v in burndown.ideal):
             note += labels.BURNDOWN_NOTE_END.format(end=labels.format_date(burndown.end))
         report.burndown_note = note

@@ -201,9 +201,10 @@ Seen in the check, acceptable for now:
 
 - [x] T-8.1 German tutorial (offline HTML, real slides, traffic-light calculator) and an
       80-second video built with PowerPoint
-- [x] T-8.2 Burndown slide over all tasks (R-OUT-10), version 0.9.1: effort stored in the
-      snapshots, derived for older ones; checked in PowerPoint on the base and on the
-      4:3 Facet template; 130 tests pass
+- [x] T-8.2 Burndown slide over all tasks (R-OUT-10), version 0.9.1: open share of the
+      effort in % (no hours for the customer), effort stored in the snapshots and derived
+      for older ones; checked in PowerPoint on the base and on the 4:3 Facet template;
+      131 tests pass
 
 ## Order and estimate
 

@@ -5,8 +5,8 @@ the customer meeting:
 
 - **Title slide** with project, customer, calendar week and date
 - **Progress over time**: one line per software version over the last weeks
-- **Burndown**: the remaining effort of all tasks in hours, week by week, with an ideal
-  line down to 0 h at the latest due date
+- **Burndown**: the open share of the total effort of all tasks in %, week by week, with
+  an ideal line down to 0 % at the latest due date (no hours on the slide)
 - **One table per software version**: every task with its progress in %, last week's
   value in brackets, e.g. **65 %** (50 %), and a traffic light that shows whether it is on
   schedule: ● green, ● orange, ● red, ● grey (not assessable)
@@ -96,9 +96,11 @@ Dates can be Excel dates or text like `2026-11-27` or `27.11.2026`.
 - **Version total** = the average of its tasks weighted by estimated hours (a plain
   average if an estimate is missing). The version light compares the weighted totals,
   so a version can be green while single tasks are orange.
-- **Burndown** = the sum over all tasks with an estimate of estimate × (1 − progress):
-  a done task counts 0 h, a task not started its full estimate. Tasks without an
-  estimate are not included; without any estimate the slide is left out.
+- **Burndown** = open hours ÷ total hours of all tasks with an estimate, shown in %.
+  Open hours of a task = estimate × (1 − progress): a done task counts 0, a task not
+  started its full estimate. The customer only sees percentages; the hours appear
+  only in the console window. Tasks without an estimate are not included; without any
+  estimate the slide is left out.
 
 ### Sheet "Settings"
 

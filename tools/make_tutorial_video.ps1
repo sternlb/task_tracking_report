@@ -207,7 +207,7 @@ $lines = @(
     @('Report date:  2026-11-10 (CW 46/2026)', $TERMINK),
     @('Tasks:        22 in 3 version(s)', $TERMINK),
     @('History:      previous week 2026-W45; trend CW 40 .. CW 46', $TERMINK),
-    @('Burndown:     614 h of 1,372 h remaining', $TERMINK),
+    @('Burndown:     45 % open (614 h of 1,372 h)', $TERMINK),
     @('', $TERMINK),
     @('  Version 1.2.0     53 % (46 %)  GREEN    15 task(s)', (RGB 111 208 138)),
     @('  Version 2.0.0     23 % (20 %)  ORANGE    4 task(s)', (RGB 255 194 77)),
