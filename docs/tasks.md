@@ -12,13 +12,30 @@ requirements they fulfil. `[ ]` open, `[x]` done.
 
 ## M1 — Foundation (risk first: can we write a pptx PowerPoint accepts?)
 
-- [ ] T-1.1 Repo skeleton (no packaging metadata needed), `python -m unittest` runs, `.gitignore`
-- [ ] T-1.2 `pptx/opc.py`: read/write a package, rels, content types
-- [ ] T-1.3 `tools/build_base_pptx.py`: neutral 16:9 `base.pptx` (master, layouts
+- [x] T-1.1 Repo skeleton (no packaging metadata needed), `python -m unittest` runs, `.gitignore`
+- [x] T-1.2 `pptx/opc.py`: read/write a package, rels, content types
+- [x] T-1.3 `tools/build_base_pptx.py`: neutral 16:9 `base.pptx` (master, layouts
       `Title Slide` + `Title Only` + `Title and Content`, theme) — D-2
-- [ ] T-1.4 `tools/opc_lint.py` + tests
-- [ ] T-1.5 **Spike:** one title slide + one table + one line chart in `base.pptx`, open in
+- [x] T-1.4 `tools/opc_lint.py` + tests
+- [x] T-1.5 **Spike:** one title slide + one table + one line chart in `base.pptx`, open in
       PowerPoint without a repair prompt. Go/no-go for the whole approach.
+- [x] T-1.6 `.github/copilot-instructions.md` so GitHub Copilot understands the project
+
+**M1 result (2026-11-10): GO.** `tools/spike.py` builds a deck from `base.pptx`.
+PowerPoint 365 opens it in a normal window without a repair prompt. The chart has 3
+series and is editable, the table is 8×5, and the shape list via `tools/ppt_check.ps1`
+is as expected. 16 tests pass on Python 3.11 and 3.13 (3.9 is not installed here, see T-7.3).
+
+Lessons:
+- PowerPoint is *tolerant*. A copy with an unknown element and one with a missing
+  table grid column both opened without a prompt (the second was silently "repaired"
+  by dropping a column). Neither automation nor a normal open reliably shows small
+  schema mistakes, so `lint.py` and the visual PNG check stay important, and element
+  order has to be right by construction.
+- Table row heights are minimums. The legend is anchored to the bottom of the content
+  area (design 8.2 updated).
+- Changed on 2026-11-10: no Owner/Due columns on the customer slides; the header is
+  `Progress (prev. week)` (R-OUT-3, R-OUT-4).
 
 ## M2 — Excel in (R-IN-*)
 

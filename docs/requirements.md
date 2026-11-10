@@ -124,13 +124,14 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 - **R-OUT-2 (M)** The "Progress over time" slide shall show a native, editable
   PowerPoint line chart: x-axis = calendar weeks (the last N weeks with snapshots),
   y-axis = 0–100 %, one line per version.
-- **R-OUT-3 (M)** Each version table shall contain per task: ID, Title, Owner, Due,
-  Progress, Light, Comment. A summary row at the top shows the version's progress and
-  light.
+- **R-OUT-3 (M)** Each version table shall contain per task: ID, Title, Progress, Light,
+  Comment. A summary row at the top shows the version's progress and light. Owner and
+  Due are input only (Due feeds the traffic light) and are **not** shown on the customer
+  slides (decided 2026-11-10).
 - **R-OUT-4 (M)** The progress cell shall show the current value highlighted (bold, larger
   font) followed by the previous week's value in brackets in a smaller grey font, e.g.
   **65 %** (50 %). Tasks without a previous value show `(new)`, and the first report ever
-  shows `(–)`.
+  shows `(–)`. The column header explains the bracket: `Progress (prev. week)`.
 - **R-OUT-5 (M)** The light shall be shown as a green, orange, red or grey circle. A
   short legend on each table slide explains the rule.
 - **R-OUT-6 (S)** A change in the light since last week (e.g. green → red) shall be

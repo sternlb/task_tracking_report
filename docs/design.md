@@ -190,17 +190,22 @@ points instead of lines, plus a note "Trend builds up from next week".
 
 **Version table:** title `Version 1.2.0` (continued: `Version 1.2.0 (2/3)`).
 
-| ID | Task | Owner | Due | Progress | Status | Comment |
-|---|---|---|---|---|---|---|
-| **Version total** | | | 15 Dec | **62 %** (55 %) | ● (●) | |
-| PRJ-123 | Login dialog | Max | 20 Nov | **65 %** (50 %) | ● (●) | waiting for API |
+| ID | Task | Progress (prev. week) | Status | Comment |
+|---|---|---|---|---|
+| **Version total** | | **62 %** (55 %) | ● (●) | |
+| PRJ-123 | Login dialog | **65 %** (50 %) | ● (●) | waiting for API |
+
+Owner and Due are not shown to the customer (R-OUT-3).
 
 - Progress cell: run 1 = current value, bold, 14 pt; run 2 = ` (50 %)`, 10 pt grey.
-- Status cell: run 1 = `●` 18 pt in the light colour; run 2 = ` (●)` 10 pt in last week's
-  colour, only if different from today. This makes changes stand out (R-OUT-6).
+- Status cell: run 1 = `●` 18 pt in the light colour, then ` (●)` with the dot at 13 pt in
+  last week's colour and grey brackets, only if different from today. This makes changes
+  stand out (R-OUT-6).
 - Header row filled with `accent1`, summary row filled with `accent1` at 20 %, zebra
   rows light grey. Font from the theme (`+mn-lt`).
-- Column widths as proportions of the content area: 10/30/10/9/14/9/18 %. Titles
+- Column widths as proportions of the content area: 11/40/17/10/22 %.
+- The legend sits at the bottom of the content area, not under the last row: rows grow
+  with their text, so the declared row heights are only a minimum (seen in the M1 spike). Titles
   longer than 70 characters and comments longer than 60 characters are shortened with `…`.
 - Legend line under the table, 9 pt: `● on track  ● ≤ 25 pp behind  ● > 25 pp behind or overdue  ● not assessable · (…) = previous week`.
 
