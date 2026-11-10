@@ -1,11 +1,12 @@
-"""Command line (R-OP-1). The deck itself is added in M5.
+"""Command line (R-OP-1).
 
     python -m statusreport --init Tasks.xlsx
-    python -m statusreport Tasks.xlsx [--polarion export.xlsx] [--date 2026-11-10] [--no-save]
+    python -m statusreport Tasks.xlsx [--polarion export.xlsx] [--date 2026-11-10]
+                                      [--template customer.pptx] [--out deck.pptx] [--no-save] [--force]
     python -m statusreport Tasks.xlsx --check
 
-A normal run stores this week's snapshot in history/ next to the workbook
-(R-HI-1). --check and --no-save write nothing.
+A normal run writes the deck next to the workbook and stores this week's
+snapshot in history/ (R-HI-1). --no-save writes only the deck, --check nothing.
 """
 
 from __future__ import annotations
@@ -13,13 +14,17 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import zipfile
 from collections import Counter
 from typing import List, Optional
 
-from . import __version__, history, parse
+from . import __version__, history, output, parse
 from .calc import compute
 from .loader import InputError, load
 from .model import VersionStatus
+from .pptx.deck import Deck
+from .render import render
+from .report import build_report
 from .template import template_bytes
 from .xlsx_read import XlsxError
 
@@ -37,6 +42,8 @@ def _parse_args(argv: Optional[List[str]]):
     ap.add_argument("--date", metavar="YYYY-MM-DD", help="report date (overrides the Settings sheet)")
     ap.add_argument("--check", action="store_true", help="only read and validate the input, write nothing")
     ap.add_argument("--no-save", action="store_true", help="do not store this week's snapshot in history/")
+    ap.add_argument("--template", metavar="PPTX", help="customer PowerPoint template (overrides the Settings sheet)")
+    ap.add_argument("--out", metavar="PPTX", help="output file (default: '<Project> Status <week>.pptx' next to the input)")
     ap.add_argument("--force", action="store_true", help="overwrite existing output files")
     ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return ap.parse_args(argv)
@@ -124,7 +131,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     snapshots = history.load_all(folder, hist_issues)
     current = history.snapshot_from(versions, s.report_date)
     prev = history.previous(snapshots, current.week)
-    keys, labels, _ = history.trend(snapshots, current, s.trend_weeks, [v.name for v in versions])
+    keys, axis, series = history.trend(snapshots, current, s.trend_weeks, [v.name for v in versions])
 
     week = s.report_date.isocalendar()
     print(f"Project:      {s.project or '-'} / {s.customer or '-'}")
@@ -134,7 +141,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"Tasks:        {len(result.tasks)} in {len(per_version)} version(s)")
     print(f"Thresholds:   orange > {s.orange_pp:g} pp, red > {s.red_pp:g} pp behind")
     prev_text = f"previous week {prev.week} ({prev.report_date.isoformat()})" if prev else "no previous week yet"
-    print(f"History:      {len(snapshots)} snapshot(s), {prev_text}; trend {labels[0]} .. {labels[-1]} ({len(keys)} week(s))")
+    print(f"History:      {len(snapshots)} snapshot(s), {prev_text}; trend {axis[0]} .. {axis[-1]} ({len(keys)} week(s))")
 
     _print_versions(versions, prev)
 
@@ -146,14 +153,38 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.check:
         print("\n--check: nothing written.")
-    elif args.no_save:
-        print("\n--no-save: snapshot not stored.")
+        return EXIT_ROW_ERRORS if result.errors else EXIT_OK
+    if not versions:
+        print("\nerror: no tasks to report - nothing written.")
+        return EXIT_FAILED
+
+    # 1. the deck (first: if it cannot be written, the week is not stored either)
+    template = output.template_path(args.input, s.template, args.template)
+    try:
+        deck = Deck.from_file(template) if template else Deck.default()
+    except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exc:
+        print(f"\nerror: cannot use the template {template}: {exc}")
+        return EXIT_FAILED
+    report = build_report(s, versions, prev, current.week, axis, series)
+    render(report, deck, s.title_layout, s.content_layout, s.rows_per_slide)
+    target = args.out or os.path.join(os.path.dirname(os.path.abspath(args.input)), output.default_name(s.project, current.week))
+    target = output.free_path(target, args.force)
+    try:
+        deck.save(target)
+    except PermissionError:
+        print(f"\nerror: cannot write {target} - is it open in PowerPoint?")
+        return EXIT_FAILED
+    for warning in deck.warnings:
+        print(f"warning template: {warning}")
+    print(f"\nDeck written: {target} ({len(deck.slides)} slides)")
+
+    # 2. the snapshot
+    if args.no_save:
+        print("--no-save: snapshot not stored.")
     else:
         replaced = current.week in snapshots
         path = history.save(folder, current)
-        print(f"\nSnapshot {'replaced' if replaced else 'saved'}: {path}")
-    if not args.check:
-        print("Deck generation follows in milestone M5.")
+        print(f"Snapshot {'replaced' if replaced else 'saved'}: {path}")
     return EXIT_ROW_ERRORS if result.errors else EXIT_OK
 
 

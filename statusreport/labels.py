@@ -43,6 +43,38 @@ MAPPING_HEADERS = ("Field", "Polarion column", "Notes")
 SETTINGS_HEADERS = ("Setting", "Value", "Description")
 LIGHT_CHOICES = ("Green", "Orange", "Red")
 
+# ---- slides (M5) ---------------------------------------------------------------------------------
+
+MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+DECK_TITLE_FALLBACK = "Software status"
+SUBTITLE = "Status report"  # joined with customer, calendar week and date by " · "
+CALENDAR_WEEK = "CW {week:02d} / {year}"
+TREND_TITLE = "Progress over time"
+TREND_FIRST_WEEK = "The trend builds up from next week on."
+VERSION_TITLE = "Version {name}"
+VERSION_TITLE_CONTINUED = "Version {name} ({page}/{pages})"
+TABLE_HEADERS = ("ID", "Task", "Progress (prev. week)", "Status", "Comment")
+TOTAL_ROW = "Version total"
+PREV_NEW = "(new)"
+PREV_NONE = "(–)"
+NO_VALUE = "–"
+LIGHT_DOT = "●"
+LEGEND = (
+    ("green", "on track"),
+    ("orange", "behind by more than {orange:g} pp"),
+    ("red", "behind by more than {red:g} pp or overdue"),
+    ("grey", "not assessable"),
+)
+LEGEND_PREVIOUS = "(…) = previous week"
+OUTPUT_NAME = "{project} Status {week}.pptx"
+OUTPUT_NAME_NO_PROJECT = "Status {week}.pptx"
+
+
+def format_date(day) -> str:
+    """10 Nov 2026 — fixed English month names, independent of the PC's locale."""
+    return f"{day.day} {MONTHS[day.month - 1]} {day.year}"
+
+
 README = [
     "SW Status Report - input workbook",
     "",
