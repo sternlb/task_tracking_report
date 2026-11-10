@@ -171,10 +171,12 @@ Seen in the check, acceptable for now:
 
 - [x] T-7.1 CLI complete (R-OP-1), exit codes, console output
 - [x] T-7.2 `tools/build_pyz.py` → `dist/statusreport.pyz`, `make_report.cmd` (R-OP-2)
-- [ ] T-7.3 Test with Python 3.9 and 3.12, performance with 500 tasks (NF-1)
+- [x] T-7.3 Test with Python 3.9 and 3.12, performance with 500 tasks (NF-1)
       — done: performance (0.6 s for 500 tasks and 52 weeks), Python 3.11 and 3.13, a static
-      3.9 check (grammar, no newer APIs, stdlib-only imports). Open: a run on a real
-      Python 3.9 (needs a download, waiting for OK).
+      3.9 check (grammar, no newer APIs, stdlib-only imports). A run on a real Python 3.9
+      was **skipped by decision (2026-11-10)**: it would need a download. The static check
+      stays the guard. If the target laptop turns out to have 3.9 or 3.10, run the test
+      suite there once.
 - [x] T-7.4 README as a user guide (NF-4): Excel, Polarion export view, weekly routine, template
 - [ ] T-7.5 Acceptance: Leo runs a real week end to end
 
