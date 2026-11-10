@@ -67,6 +67,8 @@ tools/
   make_fixtures.ps1  dev only: creates tests/fixtures/*.xlsx with real Excel
   make_demo.py       demo input + 6 weeks of history (python tools/make_demo.py out/demo)
   make_templates.ps1 dev only: foreign test templates (German names, .potx, 4:3) with real PowerPoint
+  build_pyz.py       delivery: dist/sw-status-report/ (statusreport.pyz, make_report.cmd, Tasks.xlsx, README) + zip
+make_report.cmd      Windows launcher shipped with the .pyz (drag the workbook onto it)
 tests/               unittest only; fixtures/ holds files saved by real Excel (do not regenerate casually)
 docs/                requirements.md, design.md, tasks.md
 ```
@@ -142,6 +144,12 @@ PowerPoint details in `render.py`/`pptx/`.
 - Look at it: `powershell -File tools\ppt_check.ps1 "out\demo\Project Falcon Status 2026-W46.pptx" -PngDir out\png`
 - After changing the base design: `python tools/build_base_pptx.py`
 - Sample deck: `python tools/spike.py`, then `python tools/opc_lint.py out/spike.pptx`
+- Build the delivery: `python tools/build_pyz.py` (output in `dist/`, not committed)
+- `tests/test_delivery.py` guards the hard rules: Python 3.9 grammar, no newer APIs,
+  standard-library imports only, the .pyz runs isolated (`python -I`), performance.
+  Keep it green.
+- Save source files as UTF-8 **without BOM** (PowerShell 5.1 `Set-Content -Encoding utf8`
+  adds one; the tests catch it).
 - When finishing a task from `docs/tasks.md`, tick its checkbox in the same commit.
 - All user-visible text is English. From M5 on it belongs in `labels.py`, not inline.
 - Keep functions small and typed; dataclasses for data; no global state.

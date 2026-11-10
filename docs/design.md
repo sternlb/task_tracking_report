@@ -285,7 +285,18 @@ python statusreport.pyz Tasks.xlsx --polarion export.xlsx --no-save
 ```
 
 Exit codes: `0` OK, `1` OK with row errors (rows skipped), `2` structural error / no output.
-`make_report.cmd` calls `py -3 "%~dp0statusreport.pyz" "%~1"` and keeps the window open.
+An unexpected exception is caught in `main()`, printed with its traceback and ends with
+exit code 2, so the window of `make_report.cmd` shows what happened.
+
+`make_report.cmd` uses `py -3` (or `python` if there is no launcher) to run
+`%~dp0statusreport.pyz` with all arguments. It prints Done / rows skipped / nothing
+written depending on the exit code, and keeps the window open (`pause`, skipped when
+`SWSR_NO_PAUSE` is set, for tests).
+
+Build (`tools/build_pyz.py`): the package is copied into a temp folder without
+`__pycache__`, a root `__main__.py` calls `statusreport.__main__.main`, and
+`zipapp.create_archive(compressed=True)` writes the archive. `base.pptx` is read with
+`pkgutil.get_data`, which works from inside the zip.
 
 ## 10. Test strategy
 

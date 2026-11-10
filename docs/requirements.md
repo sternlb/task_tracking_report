@@ -179,8 +179,9 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 
 - **R-OP-1 (M)** Command line: `python statusreport.pyz <input.xlsx> [options]`
   (`--init`, `--template`, `--polarion`, `--date`, `--out`, `--no-save`, `--force`,
-  `--check`). `--check` only reads and validates the input and lists all problems, without
-  writing anything (added in M2).
+  `--check`, `-v/--verbose`). `--check` only reads and validates the input and lists all
+  problems, without writing anything (added in M2). A normal run prints one summary
+  line per version; `--verbose` lists every task (added in M7).
 - **R-OP-2 (S)** Windows convenience: dragging the Excel onto `make_report.cmd` creates
   the deck.
 - **R-OP-3 (M)** Data problems (missing ID, duplicate ID, date that cannot be read,

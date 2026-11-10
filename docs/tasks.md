@@ -169,11 +169,31 @@ Seen in the check, acceptable for now:
 
 ## M7 — Delivery
 
-- [ ] T-7.1 CLI complete (R-OP-1), exit codes, console output
-- [ ] T-7.2 `tools/build_pyz.py` → `dist/statusreport.pyz`, `make_report.cmd` (R-OP-2)
+- [x] T-7.1 CLI complete (R-OP-1), exit codes, console output
+- [x] T-7.2 `tools/build_pyz.py` → `dist/statusreport.pyz`, `make_report.cmd` (R-OP-2)
 - [ ] T-7.3 Test with Python 3.9 and 3.12, performance with 500 tasks (NF-1)
-- [ ] T-7.4 README as a user guide (NF-4): Excel, Polarion export view, weekly routine, template
+      — done: performance (0.6 s for 500 tasks and 52 weeks), Python 3.11 and 3.13, a static
+      3.9 check (grammar, no newer APIs, stdlib-only imports). Open: a run on a real
+      Python 3.9 (needs a download, waiting for OK).
+- [x] T-7.4 README as a user guide (NF-4): Excel, Polarion export view, weekly routine, template
 - [ ] T-7.5 Acceptance: Leo runs a real week end to end
+
+**M7 result (2026-11-10):**
+- `python tools/build_pyz.py` builds `dist/sw-status-report/` (`statusreport.pyz` 57 KB,
+  `make_report.cmd`, an empty `Tasks.xlsx`, `README.md`) and
+  `dist/sw-status-report-0.9.0.zip`.
+- Unpacked away from the sources, it runs with `python -I` on 3.11 and 3.13. The
+  built-in design loads from inside the zipapp, and `make_report.cmd` finds `py`/`python`,
+  passes the workbook on and reports the result. These are now also automated tests.
+- CLI: the normal run shows one line per version; `-v`/`--verbose` and `--check` list
+  every task. An unexpected error ends with a readable message (exit 2) instead of a
+  bare traceback.
+- README rewritten as a user guide: getting started, weekly routine, the workbook,
+  calculation rules, Polarion, template, options, messages.
+- Version 0.9.0; 1.0.0 after acceptance (T-7.5).
+- 118 tests pass on Python 3.11 and 3.13.
+- Lesson: PowerShell 5.1 `Set-Content -Encoding utf8` writes a BOM; a test now fails on
+  that.
 
 ## Order and estimate
 
