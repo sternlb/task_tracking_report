@@ -63,7 +63,14 @@ def _print_versions(versions: List[VersionStatus]) -> None:
         print(f"\nVersion {vs.name}: {_pct(vs.progress)}  expected {_pct(vs.expected)}  {vs.light.upper():<6}  due {due}  ({note})")
         for t in vs.tasks:
             override = " (override)" if t.light_override else ""
-            print(f"  {t.id:<14} {_pct(t.progress)}  expected {_pct(t.expected)}  {t.light:<6}{override}  {t.title[:40]}")
+            start = (t.start.isoformat() + ("*" if t.start_derived else " ")) if t.start else "     -     "
+            due = t.due.isoformat() if t.due else "    -     "
+            print(
+                f"  {t.id:<14} {_pct(t.progress)}  expected {_pct(t.expected)}  {t.light:<6}{override}"
+                f"  {start} .. {due}  {t.title[:40]}"
+            )
+    if any(t.start_derived for vs in versions for t in vs.tasks):
+        print("\n* Start was empty and is derived from Due minus the estimate (working days).")
 
 
 def main(argv: Optional[List[str]] = None) -> int:

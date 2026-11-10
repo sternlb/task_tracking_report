@@ -42,6 +42,7 @@ class Task:
     sheet: str = ""
     row: int = 0  # Excel row number, for messages
     # computed in M3 (calc)
+    start_derived: bool = False  # Start was empty and derived from Due - Estimate (R-CA-6)
     progress: Optional[float] = None
     expected: Optional[float] = None
     light: str = "grey"

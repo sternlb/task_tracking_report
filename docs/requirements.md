@@ -104,6 +104,10 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 - **R-CA-4 (M)** Progress % of a version = average of its tasks' progress weighted by
   Estimate (h). If any task with a progress value has no estimate, the plain average is
   used. Tasks without a progress value are left out and counted as a warning.
+- **R-CA-6 (M)** If Start is empty and Due and Estimate are given, Start = Due minus the
+  estimate, counted in working days (Mon–Fri, estimate rounded up to whole days, Due is
+  the last working day). A Start entered by the user is never replaced. Derived starts
+  are marked in `--check` (decided 2026-11-10, resolves OP-5).
 - **R-CA-5 (S)** Traffic light of a version: the same rules as R-CA-3, applied to the
   version's progress against the version's expected % (weighted the same way, with the
   earliest Start and latest Due of its tasks). Clarified in M3:
@@ -197,8 +201,7 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   If so, progress = spent / (spent + remaining) as an alternative rule.
 - **OP-4** Should "not assessable" (grey) tasks appear on the customer slide or only in
   the console?
-- **OP-5** Polarion has no standard start date, so tasks that come only from the import
-  get a grey light unless Start is mapped to a custom field or filled in `Tasks`. Options:
-  map a custom field, fill Start by hand, or a fallback rule (e.g. Start = Due − estimate).
+- ~~**OP-5**~~ Polarion has no standard start date. **Decided 2026-11-10:** fallback
+  Start = Due − estimate in working days (R-CA-6). Mapping a custom field still works and wins.
 - **OP-6** In Polarion an empty `Time Spent` means "nothing booked" (0 h). Today an empty
   Spent gives no progress value (R-CA-1.3). Treat empty as 0 for imported rows?

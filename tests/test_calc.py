@@ -10,7 +10,9 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from statusreport.calc import compute, compute_version, expected_progress, light_for, task_progress, version_order  # noqa: E402
+from statusreport.calc import (  # noqa: E402
+    compute, compute_task, compute_version, derive_start, expected_progress, light_for, task_progress, version_order,
+)
 from statusreport.loader import load  # noqa: E402
 from statusreport.model import Settings, Task  # noqa: E402
 
@@ -68,6 +70,42 @@ class ExpectedTest(unittest.TestCase):
         self.assertIsNone(expected_progress(None, d, ON))
         self.assertIsNone(expected_progress(s, None, ON))
         self.assertIsNone(expected_progress(d, s, ON), "Start after Due is no plan")
+
+
+class DeriveStartTest(unittest.TestCase):
+    """R-CA-6: empty Start = Due minus the estimate in working days (Mon-Fri)."""
+
+    FRI = D(2026, 11, 13)
+
+    def test_cases(self):
+        cases = [
+            (self.FRI, 24, D(2026, 11, 11), "3 days ending Friday start Wednesday"),
+            (self.FRI, 8, self.FRI, "1 day = the due day itself"),
+            (self.FRI, 4.5, self.FRI, "part of a day rounds up to 1 day"),
+            (self.FRI, 9, D(2026, 11, 12), "1.1 days round up to 2"),
+            (self.FRI, 40, D(2026, 11, 9), "a week ending Friday starts Monday"),
+            (self.FRI, 56, D(2026, 11, 5), "7 days skip the weekend"),
+            (D(2026, 11, 15), 8, self.FRI, "Due on Sunday counts back from Friday"),
+            (D(2026, 11, 16), 16, self.FRI, "2 days ending Monday start Friday"),
+        ]
+        for due, est, start, why in cases:
+            self.assertEqual(derive_start(due, est, 8), start, why)
+        self.assertEqual(derive_start(self.FRI, 15, 7.5), D(2026, 11, 12), "uses hours per day")
+
+    def test_no_derivation_without_due_or_estimate(self):
+        self.assertIsNone(derive_start(None, 24, 8))
+        self.assertIsNone(derive_start(self.FRI, None, 8))
+        self.assertIsNone(derive_start(self.FRI, 0, 8))
+
+    def test_compute_task_fills_only_an_empty_start(self):
+        s = Settings(report_date=D(2026, 11, 12))
+        t = task(due=self.FRI, estimate_h=24, spent_h=12)
+        compute_task(t, s, s.report_date)
+        self.assertEqual((t.start, t.start_derived), (D(2026, 11, 11), True))
+        self.assertAlmostEqual(t.expected, 50)  # 1 of 2 calendar days
+        manual = task(start=D(2026, 11, 2), due=self.FRI, estimate_h=24)
+        compute_task(manual, s, s.report_date)
+        self.assertEqual((manual.start, manual.start_derived), (D(2026, 11, 2), False))
 
 
 class LightTest(unittest.TestCase):
@@ -206,6 +244,18 @@ class FixtureTest(unittest.TestCase):
         self.assertEqual(v12.light, "green")
         self.assertEqual(versions[1].light, "grey")  # PRJ-103 has no dates
         self.assertEqual([i.message.split(":")[0] for i in issues], ["PRJ-104"])
+
+    def test_import_without_start_dates(self):
+        """Polarion has no start field: Start is derived from Due and the estimate (R-CA-6)."""
+        result = load(os.path.join(ROOT, "tests", "fixtures", "excel_with_import.xlsx"))
+        versions, _ = compute(result.tasks, result.settings)
+        tasks = {t.id: t for v in versions for t in v.tasks}
+        self.assertFalse(tasks["PRJ-101"].start_derived)  # Start typed in Tasks
+        self.assertEqual((tasks["PRJ-201"].start, tasks["PRJ-201"].start_derived), (D(2026, 10, 22), True))  # 1w 2d
+        self.assertEqual(tasks["PRJ-203"].start, D(2026, 12, 3))  # 2d ending Fri 4 Dec
+        self.assertEqual(tasks["PRJ-203"].light, "green")  # not started yet by plan, 38 % done
+        self.assertIsNone(tasks["PRJ-301"].start)  # no Due, no estimate
+        self.assertEqual(versions[1].light, "green")
 
 
 if __name__ == "__main__":

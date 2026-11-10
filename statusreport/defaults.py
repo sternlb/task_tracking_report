@@ -54,7 +54,8 @@ POLARION_COLUMNS: Dict[str, str] = {
 MAPPING_NOTES: Dict[str, str] = {
     "id": "Required. Used to match Import rows with Tasks rows.",
     "version": "Often 'Planned In', 'Target Release' or a custom field.",
-    "start": "Polarion has no standard start field. Enter your custom field, or fill Start in Tasks.",
+    "start": "Polarion has no standard start field. Empty = Start is derived from Due minus Estimate; "
+    "or enter a custom field here, or fill Start in Tasks.",
     "progress": "Usually empty: progress comes from hours or the state.",
     "light_override": "Usually maintained in Tasks, not in Polarion.",
     "comment": "Usually maintained in Tasks, not in Polarion.",

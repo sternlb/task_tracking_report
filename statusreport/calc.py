@@ -8,6 +8,7 @@ threshold at 10, a gap of exactly 10 is still green.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 from . import parse
@@ -30,6 +31,25 @@ def task_progress(task: Task, done_states: Iterable[str]) -> Optional[float]:
     if task.estimate_h and task.estimate_h > 0 and task.spent_h is not None:
         return min(task.spent_h / task.estimate_h * 100.0, MAX_FROM_HOURS)
     return None
+
+
+def derive_start(due: Optional[dt.date], estimate_h: Optional[float], hours_per_day: float) -> Optional[dt.date]:
+    """R-CA-6: Start = Due minus the estimate, counted in working days (Mon-Fri).
+
+    The estimate is rounded up to whole days, and the due day itself is the last
+    working day: 3 days ending on a Friday start on Wednesday. A Due on a weekend
+    counts back from the Friday before.
+    """
+    if due is None or not estimate_h or estimate_h <= 0 or hours_per_day <= 0:
+        return None
+    days = max(1, math.ceil(estimate_h / hours_per_day - 1e-9))
+    day, counted = due, 0
+    while True:
+        if day.weekday() < 5:
+            counted += 1
+            if counted == days:
+                return day
+        day -= dt.timedelta(days=1)
 
 
 def expected_progress(start: Optional[dt.date], due: Optional[dt.date], on: dt.date) -> Optional[float]:
@@ -74,6 +94,10 @@ def light_for(
 
 
 def compute_task(task: Task, settings: Settings, on: dt.date) -> None:
+    if task.start is None:
+        derived = derive_start(task.due, task.estimate_h, settings.hours_per_day)
+        if derived is not None:
+            task.start, task.start_derived = derived, True
     task.progress = task_progress(task, settings.done_states)
     task.expected = expected_progress(task.start, task.due, on)
     task.light = light_for(
@@ -154,5 +178,5 @@ def compute(tasks: List[Task], settings: Settings) -> Tuple[List[VersionStatus],
 
 __all__ = [
     "GREEN", "ORANGE", "RED", "GREY",
-    "task_progress", "expected_progress", "light_for", "compute_task", "compute_version", "version_order", "compute",
+    "task_progress", "derive_start", "expected_progress", "light_for", "compute_task", "compute_version", "version_order", "compute",
 ]

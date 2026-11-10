@@ -71,7 +71,8 @@ Lessons:
 - [x] T-3.2 Expected % and traffic light incl. limits and overdue (R-CA-2, R-CA-3)
 - [x] T-3.3 Version aggregation and version light (R-CA-4, R-CA-5)
 - [x] T-3.4 Table-driven tests for all rules
-- [ ] T-3.5 Decide OP-5 (Start missing in Polarion) and OP-6 (empty Time Spent)
+- [x] T-3.5 OP-5 decided and built: empty Start = Due − estimate in working days (R-CA-6)
+- [ ] T-3.6 Decide OP-6 (empty Polarion `Time Spent` = 0 h?)
 
 **M3 result (2026-11-10):**
 - `calc.py` implements R-CA-1 … R-CA-5, and `--check` prints the computed values per

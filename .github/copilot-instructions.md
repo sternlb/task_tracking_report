@@ -102,6 +102,8 @@ builders (M5).
 
 - Task progress: manual % → else done state = 100 % → else spent/estimate hours,
   capped at 99 % → else no value (`–`).
+- Empty Start = Due minus the estimate in working days (`calc.derive_start`, R-CA-6);
+  `Task.start_derived` marks it. A Start entered by the user is never replaced.
 - Expected % = elapsed share between Start and Due (calendar days), limited to 0–100.
 - Light: override → 100 % is green → past Due and not done is red (also with unknown
   progress) → missing data is grey → gap = expected − progress: ≤ 10 pp green,

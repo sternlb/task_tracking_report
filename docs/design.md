@@ -139,8 +139,13 @@ Time Spent, Status; Start is empty because Polarion has no standard start field)
 
 Directly implements R-CA-1 to R-CA-5. Details:
 
+- Empty Start (R-CA-6): `derive_start(due, estimate_h, hours_per_day)` counts
+  `ceil(estimate_h / hours_per_day)` working days back, with Due as the last one. It sets
+  `Task.start` and `Task.start_derived = True` before anything else is computed, so the
+  expected %, the version start and the history all use the derived date.
 - Expected % = `(report_date − start) / (due − start) × 100`, limited to 0–100. If
-  `due == start`: 0 before, 100 from that day.
+  `due == start`: 0 before, 100 from that day. (The derived start uses working days, the
+  elapsed share uses calendar days, as R-CA-2 says.)
 - The thresholds compare percentage points and include the limit (gap = 10 → green
   with the orange threshold at 10).
 - Version aggregation with weights `w = estimate_h` (or 1 for all, see R-CA-4). Version
