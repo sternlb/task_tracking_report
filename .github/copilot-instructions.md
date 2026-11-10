@@ -44,6 +44,7 @@ statusreport/
   parse.py           cell parsers: date, hours ("1w 2d 4h"), percent, light, text, natural_key
   xlsx_read.py       minimal .xlsx reader -> rows of Python values (Percent, date, str, float)
   loader.py          input workbook -> tasks + issues (settings, mapping, import merge by ID)
+  calc.py            progress, expected %, traffic lights, version aggregation (R-CA-*)
   template.py        the empty input workbook for --init
   xmlutil.py         namespaces, XML escaping, XML declaration
   xlsx_write.py      minimal .xlsx writer: styles, widths, frozen header, drop-downs
@@ -64,8 +65,8 @@ tests/               unittest only; fixtures/ holds files saved by real Excel (d
 docs/                requirements.md, design.md, tasks.md
 ```
 
-Planned modules (see design section 3): `calc.py` (M3), `history.py` (M4), `report.py`
-and the slide builders (M5).
+Planned modules (see design section 3): `history.py` (M4), `report.py` and the slide
+builders (M5).
 
 ### Input handling in short
 
@@ -102,11 +103,13 @@ and the slide builders (M5).
 - Task progress: manual % → else done state = 100 % → else spent/estimate hours,
   capped at 99 % → else no value (`–`).
 - Expected % = elapsed share between Start and Due (calendar days), limited to 0–100.
-- Light: override → 100 % is green → past Due and not done is red → missing data is
-  grey → gap = expected − progress: ≤ 10 pp green, ≤ 25 pp orange, else red
-  (thresholds come from the Settings sheet).
+- Light: override → 100 % is green → past Due and not done is red (also with unknown
+  progress) → missing data is grey → gap = expected − progress: ≤ 10 pp green,
+  ≤ 25 pp orange, else red (thresholds come from the Settings sheet; limits included).
 - Version progress = average weighted by estimated hours (plain average if an estimate
-  is missing).
+  is missing). The version light compares only tasks with both progress and plan;
+  task overrides do not affect it.
+- Lights are the strings `green`, `orange`, `red`, `grey` (constants in `calc.py`).
 - "Previous week" = the latest snapshot in `history/` before the report week.
 
 ## Workflow

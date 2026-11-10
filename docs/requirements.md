@@ -96,7 +96,8 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 - **R-CA-3 (M)** Traffic light of a task, first rule that applies:
   1. `Light override` filled in → that colour
   2. Progress = 100 % → green
-  3. Report date is after Due and progress < 100 % → red
+  3. Report date is after Due and progress < 100 % → red (also when the progress is
+     unknown: an overdue task that is not reported done is not on time — clarified in M3)
   4. Start, Due or progress missing → grey ("not assessable")
   5. Gap = expected − progress. Gap ≤ orange threshold → green;
      gap ≤ red threshold → orange; else → red
@@ -105,7 +106,12 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   used. Tasks without a progress value are left out and counted as a warning.
 - **R-CA-5 (S)** Traffic light of a version: the same rules as R-CA-3, applied to the
   version's progress against the version's expected % (weighted the same way, with the
-  earliest Start and latest Due of its tasks).
+  earliest Start and latest Due of its tasks). Clarified in M3:
+  - The gap is computed only over tasks that have both a progress value and a plan
+    (Start and Due), so like is compared with like. The shown version % still covers all
+    tasks with a progress value.
+  - Overdue = report date after the latest Due of the version.
+  - Task light overrides do not change the version light.
 
 ### 4.3 History
 
@@ -191,3 +197,8 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   If so, progress = spent / (spent + remaining) as an alternative rule.
 - **OP-4** Should "not assessable" (grey) tasks appear on the customer slide or only in
   the console?
+- **OP-5** Polarion has no standard start date, so tasks that come only from the import
+  get a grey light unless Start is mapped to a custom field or filled in `Tasks`. Options:
+  map a custom field, fill Start by hand, or a fallback rule (e.g. Start = Due − estimate).
+- **OP-6** In Polarion an empty `Time Spent` means "nothing booked" (0 h). Today an empty
+  Spent gives no progress value (R-CA-1.3). Treat empty as 0 for imported rows?

@@ -67,10 +67,22 @@ Lessons:
 
 ## M3 — Calculation (R-CA-*)
 
-- [ ] T-3.1 Task progress with the precedence rules (R-CA-1)
-- [ ] T-3.2 Expected % and traffic light incl. limits and overdue (R-CA-2, R-CA-3)
-- [ ] T-3.3 Version aggregation and version light (R-CA-4, R-CA-5)
-- [ ] T-3.4 Table-driven tests for all rules
+- [x] T-3.1 Task progress with the precedence rules (R-CA-1)
+- [x] T-3.2 Expected % and traffic light incl. limits and overdue (R-CA-2, R-CA-3)
+- [x] T-3.3 Version aggregation and version light (R-CA-4, R-CA-5)
+- [x] T-3.4 Table-driven tests for all rules
+- [ ] T-3.5 Decide OP-5 (Start missing in Polarion) and OP-6 (empty Time Spent)
+
+**M3 result (2026-11-10):**
+- `calc.py` implements R-CA-1 … R-CA-5, and `--check` prints the computed values per
+  version and task.
+- 58 tests pass on Python 3.11 and 3.13. They are table-driven, include every threshold
+  limit and float noise, and run end to end on the Excel-made fixture.
+- Clarified in the requirements: an overdue task with unknown progress is red; the
+  version light compares only tasks with both progress and plan; overrides do not change
+  the version light.
+- Found while checking the Polarion fixture: without a Start date every imported task is
+  grey (OP-5), and an empty Polarion `Time Spent` gives no progress (OP-6).
 
 ## M4 — History (R-HI-*)
 

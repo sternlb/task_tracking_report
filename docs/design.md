@@ -145,7 +145,15 @@ Directly implements R-CA-1 to R-CA-5. Details:
   with the orange threshold at 10).
 - Version aggregation with weights `w = estimate_h` (or 1 for all, see R-CA-4). Version
   expected % uses the same weights on the tasks' expected %.
+- Version light: gap = weighted expected − weighted progress over the tasks that have
+  both values. A version at 100 % is green; overdue = after the latest Due.
+- Comparisons add `1e-6` to the thresholds, so float noise (`10.000000000000004`) does
+  not flip a light at the limit.
 - All values are kept as `float`; rounding to whole % only happens when displayed.
+- `compute(tasks, settings)` fills `Task.progress/expected/light` and returns the
+  `VersionStatus` list in slide order (Settings `Version order` first, then natural sort)
+  plus warnings for tasks without progress. Inside a version the input order is kept.
+- `--check` prints the computed values per version and task, for checking by hand.
 
 ## 7. History (`history.py`)
 
