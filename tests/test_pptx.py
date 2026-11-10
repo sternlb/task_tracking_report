@@ -98,7 +98,7 @@ class DeckTest(unittest.TestCase):
         deck = Deck(spike_bytes())
         self.assertEqual(deck.slides, [])
         self.assertFalse([n for n in deck.pkg.parts if n.startswith(("ppt/slides/", "ppt/charts/", "ppt/embeddings/"))])
-        self.assertEqual(set(deck.layouts), {"Title Slide", "Title Only", "Title and Content"})
+        self.assertEqual(set(deck.layout_names), {"Title Slide", "Title Only", "Title and Content"})
         s = deck.add_slide("Title Only")
         s.set_title([Para([Run("again")])])
         self.assertEqual(lint_package(opc.Package.from_bytes(deck.to_bytes())), [])

@@ -28,6 +28,7 @@ SETTINGS: List[SettingDef] = [
     SettingDef("template", "Template file", "text", "PowerPoint template (.pptx), relative to this file. Empty = neutral built-in design."),
     SettingDef("title_layout", "Title layout", "text", "Name of the template layout for the title slide."),
     SettingDef("content_layout", "Content layout", "text", "Name of the template layout for chart and table slides."),
+    SettingDef("footer_text", "Footer text", "text", "Footer on the chart and table slides, e.g. 'Confidential' (only if the template has a footer field)."),
 ]
 
 

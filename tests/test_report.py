@@ -24,7 +24,7 @@ from statusreport.pptx import opc  # noqa: E402
 from statusreport.pptx.deck import Deck  # noqa: E402
 from statusreport.pptx.lint import lint_package  # noqa: E402
 from statusreport.render import render  # noqa: E402
-from statusreport.report import build_report, prev_text, shorten  # noqa: E402
+from statusreport.report import build_report, paginate, prev_text, shorten  # noqa: E402
 
 D = dt.date
 ON = D(2026, 11, 10)
@@ -72,17 +72,20 @@ class ReportModelTest(unittest.TestCase):
         self.assertEqual(r2.trend_note, "")
 
     def test_pages_split_and_repeat_the_total_row(self):
-        versions, _ = compute(tasks(25), settings(rows_per_slide=12))
-        r = build_report(settings(rows_per_slide=12), versions, None, "2026-W46", [], [])
-        self.assertEqual([p.title for p in r.pages], ["Version 1.0 (1/3)", "Version 1.0 (2/3)", "Version 1.0 (3/3)"])
-        self.assertEqual([len(p.rows) for p in r.pages], [12, 12, 1])
-        self.assertTrue(all(p.total.is_total and p.total.id == "Version total" for p in r.pages))
+        versions, _ = compute(tasks(25), settings())
+        (table,) = build_report(settings(), versions, None, "2026-W46", [], []).tables
+        pages = paginate(table, 12)
+        self.assertEqual([p.title for p in pages], ["Version 1.0 (1/3)", "Version 1.0 (2/3)", "Version 1.0 (3/3)"])
+        self.assertEqual([len(p.rows) for p in pages], [12, 12, 1])
+        self.assertTrue(all(p.total.is_total and p.total.id == "Version total" for p in pages))
+        self.assertEqual([p.title for p in paginate(table, 30)], ["Version 1.0"])
 
     def test_previous_values_and_light_changes(self):
         ts = tasks(3)
         versions, _ = compute(ts, settings())
         prev = make_prev(T_00=0.0, T_01=None)
-        (page,) = build_report(settings(), versions, prev, "2026-W46", [], []).pages
+        (table,) = build_report(settings(), versions, prev, "2026-W46", [], []).tables
+        (page,) = paginate(table, 12)
         rows = {r.id: r for r in page.rows}
         self.assertEqual(rows["T-00"].prev_text, "(0 %)")
         self.assertEqual(rows["T-01"].prev_text, "(–)")

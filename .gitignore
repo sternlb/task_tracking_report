@@ -5,5 +5,6 @@ dist/
 # generated decks and history from local test runs
 *.pptx
 !statusreport/pptx/base.pptx
+!tests/fixtures/templates/*.pptx
 history/
 ~$*

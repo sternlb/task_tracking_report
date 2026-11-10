@@ -2,7 +2,9 @@
 
 Turns the computed versions, the previous snapshot and the trend data into
 the content of every slide: texts, values and which previous-week value goes
-into the brackets. Rendering to PowerPoint is done by :mod:`statusreport.render`.
+into the brackets. Rendering to PowerPoint is done by :mod:`statusreport.render`,
+which also decides how many rows fit on a slide and how long a text may be,
+because that depends on the template's content area.
 """
 
 from __future__ import annotations
@@ -14,9 +16,6 @@ from typing import List, Optional, Sequence, Tuple
 from . import labels
 from .history import Snapshot
 from .model import Settings, VersionStatus
-
-MAX_TITLE = 62  # characters; longer task titles are shortened with "…"
-MAX_COMMENT = 45
 
 
 @dataclass
@@ -32,10 +31,17 @@ class Row:
 
 
 @dataclass
+class VersionTable:
+    version: str
+    total: Row
+    rows: List[Row]
+
+
+@dataclass
 class TablePage:
     version: str
     title: str
-    total: Row
+    total: Row  # repeated on every page of a version
     rows: List[Row]
 
 
@@ -48,9 +54,23 @@ class Report:
     trend_labels: List[str]
     trend_series: List[Tuple[str, List[Optional[float]]]]
     trend_note: str  # empty unless the trend has only one week
-    pages: List[TablePage] = field(default_factory=list)
+    tables: List[VersionTable] = field(default_factory=list)
     orange_pp: float = 10.0
     red_pp: float = 25.0
+
+
+def paginate(table: VersionTable, per_page: int) -> List[TablePage]:
+    """Split a version table into slides; titles get ``(1/3)`` when it needs more than one."""
+    per_page = max(1, per_page)
+    chunks = [table.rows[i:i + per_page] for i in range(0, len(table.rows), per_page)] or [[]]
+    pages = []
+    for n, chunk in enumerate(chunks, 1):
+        if len(chunks) == 1:
+            title = labels.VERSION_TITLE.format(name=table.version)
+        else:
+            title = labels.VERSION_TITLE_CONTINUED.format(name=table.version, page=n, pages=len(chunks))
+        pages.append(TablePage(table.version, title, table.total, chunk))
+    return pages
 
 
 def shorten(text: str, limit: int) -> str:
@@ -83,10 +103,10 @@ def _version_rows(vs: VersionStatus, prev: Optional[Snapshot]) -> Tuple[Row, Lis
         pt = prev.tasks.get(t.id) if prev else None
         rows.append(
             Row(
-                id=t.id, title=shorten(t.title, MAX_TITLE), progress=t.progress,
+                id=t.id, title=" ".join(t.title.split()), progress=t.progress,
                 prev_text=prev_text(prev, pt is not None, pt.progress if pt else None),
                 light=t.light, prev_light=_changed(t.light, pt.light if pt else None),
-                comment=shorten(t.comment, MAX_COMMENT),
+                comment=" ".join(t.comment.split()),
             )
         )
     return total, rows
@@ -118,17 +138,10 @@ def build_report(
         orange_pp=settings.orange_pp,
         red_pp=settings.red_pp,
     )
-    per_page = max(1, settings.rows_per_slide)
     for vs in versions:
         total, rows = _version_rows(vs, prev)
-        chunks = [rows[i:i + per_page] for i in range(0, len(rows), per_page)] or [[]]
-        for n, chunk in enumerate(chunks, 1):
-            if len(chunks) == 1:
-                title = labels.VERSION_TITLE.format(name=vs.name)
-            else:
-                title = labels.VERSION_TITLE_CONTINUED.format(name=vs.name, page=n, pages=len(chunks))
-            report.pages.append(TablePage(vs.name, title, total, chunk))  # total row repeated per page
+        report.tables.append(VersionTable(vs.name, total, rows))
     return report
 
 
-__all__ = ["Row", "TablePage", "Report", "build_report", "prev_text", "shorten"]
+__all__ = ["Row", "VersionTable", "TablePage", "Report", "build_report", "paginate", "prev_text", "shorten"]

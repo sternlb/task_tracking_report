@@ -1,8 +1,9 @@
-"""Deck assembly on top of a base .pptx (design 8.1, decision D-2).
+"""Deck assembly on top of a base .pptx or .potx (design 8.1, decision D-2, R-OUT-8).
 
 Opening a base removes all of its slides; layouts, masters and the theme stay.
-Slides are then added on layouts chosen by name, so the same code serves the
-built-in neutral base and a customer template.
+Slides are then added on layouts chosen by name, with a language-independent
+fallback by layout type, so the same code serves the built-in neutral base and
+any customer template.
 """
 
 from __future__ import annotations
@@ -10,17 +11,19 @@ from __future__ import annotations
 import pkgutil
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple
 from xml.etree import ElementTree as ET
 
-from ..xmlutil import NS_A, NS_P, NS_R, PML_NS, doc
+from ..xmlutil import NS_A, NS_P, NS_R, PML_NS, doc, esc
 from . import opc
 from .chart import Series, chart_workbook, line_chart_xml
 from .lint import lint_package
-from .shapes import Box, Para, Row, chart_frame, inch, placeholder_sp, table_frame, textbox_sp
+from .shapes import Box, Para, Row, Run, chart_frame, inch, placeholder_sp, table_frame, textbox_sp
 
 _P = "{%s}" % NS_P
 _A = "{%s}" % NS_A
+
+CT_TEMPLATE = "application/vnd.openxmlformats-officedocument.presentationml.template.main+xml"
 
 _GRP = (
     '<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'
@@ -28,16 +31,27 @@ _GRP = (
     '<a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>'
 )
 _SECTION_EXT = "{521415D9-36F7-43E2-AB2F-B90AF26B5E84}"
+_SLIDENUM_FIELD_ID = "{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}"
 _TITLE_TYPES = ("title", "ctrTitle")
+_FOOTER_TYPES = ("dt", "ftr", "sldNum")
 MARGIN = inch(0.4)
+FOOTER_GAP = inch(0.1)
+
+# Fallback when no layout has the configured name (names depend on the template's
+# language: "Title Only" is "Nur Titel" in a German Office). Layout types are fixed.
+_ROLE_TYPES = {
+    "title": ("title",),
+    "content": ("titleOnly", "obj", "tx"),
+}
 
 
 @dataclass
 class Placeholder:
-    type: str  # "title", "ctrTitle", "subTitle", "body", "obj", ...
+    type: str  # "title", "ctrTitle", "subTitle", "body", "obj", "sldNum", ...
     idx: str
     attrs: Dict[str, str]  # attributes of <p:ph> as written in the layout
     box: Optional[Box]
+    text: str = ""  # text in the layout (e.g. a fixed footer)
 
 
 @dataclass
@@ -45,6 +59,7 @@ class Layout:
     name: str
     part: str
     placeholders: List[Placeholder]
+    type: str = "cust"  # sldLayout/@type: title, titleOnly, obj, ... (language independent)
 
     def find(self, *types: str) -> Optional[Placeholder]:
         for ph in self.placeholders:
@@ -64,7 +79,11 @@ def _placeholders(root: ET.Element) -> List[Placeholder]:
         ext = sp.find(f"{_P}spPr/{_A}xfrm/{_A}ext")
         if off is not None and ext is not None:
             box = Box(int(off.get("x")), int(off.get("y")), int(ext.get("cx")), int(ext.get("cy")))
-        out.append(Placeholder(ph.get("type", "obj"), ph.get("idx", "0"), dict(ph.attrib), box))
+        ph_type = ph.get("type", "obj")
+        text = ""
+        if ph_type != "sldNum":  # the slide number is a field, not text
+            text = "".join(t.text or "" for t in sp.iter(_A + "t")).strip()
+        out.append(Placeholder(ph_type, ph.get("idx", "0"), dict(ph.attrib), box, text))
     return out
 
 
@@ -76,11 +95,16 @@ def _master_kind(ph_type: str) -> str:
     return ph_type
 
 
+def _ph_attrs(ph: Placeholder) -> Dict[str, str]:
+    return {k: v for k, v in ph.attrs.items() if k in ("type", "idx", "orient", "sz")}
+
+
 class Slide:
-    def __init__(self, deck: "Deck", layout: Layout, part: str) -> None:
+    def __init__(self, deck: "Deck", layout: Layout, part: str, number: int) -> None:
         self.deck = deck
         self.layout = layout
         self.part = part
+        self.number = number
         self._shapes: List[str] = []
         self._next_id = 2
 
@@ -94,8 +118,7 @@ class Slide:
     def _fill(self, ph: Optional[Placeholder], name: str, paras: Sequence[Para]) -> bool:
         if ph is None:
             return False
-        attrs = {k: v for k, v in ph.attrs.items() if k in ("type", "idx", "orient", "sz")}
-        self._shapes.append(placeholder_sp(self._id(), name, attrs, paras))
+        self._shapes.append(placeholder_sp(self._id(), name, _ph_attrs(ph), paras))
         return True
 
     def set_title(self, paras: Sequence[Para]) -> bool:
@@ -103,6 +126,28 @@ class Slide:
 
     def set_subtitle(self, paras: Sequence[Para]) -> bool:
         return self._fill(self.layout.find("subTitle"), "Subtitle", paras)
+
+    def add_footers(self, footer_text: str = "") -> None:
+        """Slide number and footer, if the layout has placeholders for them (as PowerPoint does).
+
+        The footer gets ``footer_text``, or else the layout's own footer text; an empty
+        footer is left out. The date placeholder is not used.
+        """
+        for ph in self.layout.placeholders:
+            if ph.type == "sldNum":
+                attrs = "".join(f' {k}="{esc(v)}"' for k, v in _ph_attrs(ph).items())
+                sid = self._id()
+                self._shapes.append(
+                    f'<p:sp><p:nvSpPr><p:cNvPr id="{sid}" name="Slide Number {sid}"/>'
+                    f'<p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph{attrs}/></p:nvPr></p:nvSpPr>'
+                    "<p:spPr/><p:txBody><a:bodyPr/><a:lstStyle/><a:p>"
+                    f'<a:fld id="{_SLIDENUM_FIELD_ID}" type="slidenum"><a:rPr lang="en-US"/><a:t>{self.number}</a:t></a:fld>'
+                    '<a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp>'
+                )
+            elif ph.type == "ftr":
+                text = footer_text or ph.text
+                if text:
+                    self._fill(ph, "Footer", [Para([Run(text)])])
 
     # ---- free shapes ------------------------------------------------------------
 
@@ -140,14 +185,18 @@ class Deck:
         self.pkg = opc.Package.from_bytes(data)
         self.pkg.defaults.setdefault("xlsx", opc.CT_XLSX)
         self.pres = self.pkg.main_part()
-        if self.pkg.content_type(self.pres) != opc.CT_PRESENTATION:
-            raise ValueError("not a PowerPoint presentation (.pptx)")
+        ct = self.pkg.content_type(self.pres)
+        if ct == CT_TEMPLATE:  # a .potx: the output is a normal presentation
+            self.pkg.overrides[self.pres.lower()] = opc.CT_PRESENTATION
+        elif ct != opc.CT_PRESENTATION:
+            raise ValueError("not a PowerPoint presentation or template (.pptx / .potx)")
         size = re.search(rb'<(?:\w+:)?sldSz\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"', self.pkg.parts[self.pres])
         self.width, self.height = (int(size.group(1)), int(size.group(2))) if size else (12192000, 6858000)
         self._strip_slides()
         self.layouts = self._read_layouts()
         self.slides: List[Slide] = []
         self.warnings: List[str] = []
+        self._chosen: Dict[Tuple[str, str], Layout] = {}
 
     @classmethod
     def default(cls) -> "Deck":
@@ -175,9 +224,9 @@ class Deck:
         pkg.parts[pres] = xml.encode("utf-8")
         pkg.drop_unreachable()
 
-    def _read_layouts(self) -> Dict[str, Layout]:
+    def _read_layouts(self) -> List[Layout]:
         pkg = self.pkg
-        layouts: Dict[str, Layout] = {}
+        layouts: List[Layout] = []
         for master in pkg.related(self.pres, opc.RT_SLIDE_MASTER):
             master_ph = _placeholders(ET.fromstring(pkg.parts[pkg.find(master)]))
             for part in pkg.related(master, opc.RT_SLIDE_LAYOUT):
@@ -186,51 +235,95 @@ class Deck:
                     continue
                 root = ET.fromstring(pkg.parts[actual])
                 csld = root.find(_P + "cSld")
-                name = csld.get("name", "") if csld is not None else ""
+                name = " ".join((csld.get("name", "") if csld is not None else "").split())
                 phs = _placeholders(root)
                 for ph in phs:  # inherit position from the master
                     if ph.box is None:
                         kind = _master_kind(ph.type)
                         src = next((m for m in master_ph if _master_kind(m.type) == kind and m.box), None)
                         ph.box = src.box if src else None
-                layouts.setdefault(name, Layout(name, actual, phs))
+                layouts.append(Layout(name, actual, phs, root.get("type", "cust")))
         if not layouts:
             raise ValueError("template has no slide layouts")
         return layouts
 
     # ---- layouts and areas --------------------------------------------------------
 
-    def layout(self, name: str) -> Layout:
-        if name in self.layouts:
-            return self.layouts[name]
-        low = name.lower()
-        for key, lay in self.layouts.items():
-            if key.lower() == low:
-                return lay
-        fallback = next((l for l in self.layouts.values() if l.find(*_TITLE_TYPES)), next(iter(self.layouts.values())))
-        self.warnings.append(f'layout "{name}" not found in template, using "{fallback.name}"')
-        return fallback
+    @property
+    def layout_names(self) -> List[str]:
+        return [l.name for l in self.layouts]
+
+    def layout(self, name: str, role: str = "content") -> Layout:
+        """Layout by name (case-insensitive); otherwise by layout type for the role.
+
+        ``role`` is ``"title"`` (title slide) or ``"content"`` (chart and table slides).
+        A fallback adds one warning per name and role.
+        """
+        key = (name, role)
+        if key in self._chosen:
+            return self._chosen[key]
+        want = " ".join(name.split()).lower()
+        found = next((l for l in self.layouts if l.name.lower() == want), None)
+        if found is None:
+            found = self._fallback(role)
+            names = [f'"{n}"' for n in self.layout_names]
+            more = f" and {len(names) - 10} more" if len(names) > 10 else ""
+            self.warnings.append(
+                f'layout "{name}" not found, using "{found.name}" (set "Title layout" / "Content layout" '
+                f"in Settings to choose). Layouts: {', '.join(names[:10])}{more}"
+            )
+        self._chosen[key] = found
+        return found
+
+    def _fallback(self, role: str) -> Layout:
+        for layout_type in _ROLE_TYPES.get(role, ()):
+            hit = next((l for l in self.layouts if l.type == layout_type), None)
+            if hit:
+                return hit
+        if role == "title":
+            hit = next((l for l in self.layouts if l.find("ctrTitle")), None)
+        else:  # a layout with a title that is not a title slide, preferring few placeholders
+            candidates = [l for l in self.layouts if l.find("title") and not l.find("ctrTitle")]
+            hit = min(candidates, key=lambda l: len([p for p in l.placeholders if p.type not in _FOOTER_TYPES]), default=None)
+        return hit or next((l for l in self.layouts if l.find(*_TITLE_TYPES)), self.layouts[0])
 
     def content_area(self, layout: Layout) -> Box:
+        """Where tables and charts go: the layout's body placeholder, else below the title.
+
+        The area never reaches into the footer zone (date, footer, slide number).
+        """
         body = next(
             (p for p in layout.placeholders if p.idx == "1" and p.type in ("obj", "body") and p.box), None
         )
         if body:
-            return body.box
-        title = layout.find(*_TITLE_TYPES)
-        if title and title.box:
-            top = title.box.y + title.box.h + inch(0.2)
-            return Box(title.box.x, top, title.box.w, self.height - top - MARGIN)
-        return Box(MARGIN, MARGIN, self.width - 2 * MARGIN, self.height - 2 * MARGIN)
+            area = Box(body.box.x, body.box.y, body.box.w, body.box.h)
+        else:
+            title = layout.find(*_TITLE_TYPES)
+            if title and title.box:
+                top = title.box.y + title.box.h + inch(0.2)
+                area = Box(title.box.x, top, title.box.w, self.height - top - MARGIN)
+            else:
+                area = Box(MARGIN, MARGIN, self.width - 2 * MARGIN, self.height - 2 * MARGIN)
+        footer_tops = [
+            p.box.y for p in layout.placeholders
+            if p.type in _FOOTER_TYPES and p.box and p.box.y > area.y + area.h // 2
+        ]
+        if footer_tops:
+            bottom = min(footer_tops) - FOOTER_GAP
+            area.h = max(inch(1.0), min(area.h, bottom - area.y))
+        return area
 
     # ---- slides ---------------------------------------------------------------------
 
-    def add_slide(self, layout_name: str) -> Slide:
-        layout = self.layout(layout_name)
+    def add_slide(self, layout_name: str, role: str = "content", footer_text: str = "") -> Slide:
+        """New slide on the layout; content slides get slide number and footer placeholders."""
+        layout = self.layout(layout_name, role)
         part = self.pkg.next_name("ppt/slides/slide{}.xml")
         self.pkg.add_part(part, b"", opc.CT_SLIDE)  # reserve the name
         self.pkg.add_rel(part, opc.RT_SLIDE_LAYOUT, layout.part)
-        slide = Slide(self, layout, part)
+        slide = Slide(self, layout, part, len(self.slides) + 1)
+        if role != "title":  # by convention no slide number on the title slide
+            slide.add_footers(footer_text)
         self.slides.append(slide)
         return slide
 

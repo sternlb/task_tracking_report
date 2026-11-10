@@ -49,6 +49,7 @@ class Cell:
     paras: List[Para]
     fill: Optional[str] = None
     align: Optional[str] = None
+    span: int = 1  # columns this cell covers; the covered columns are not passed in the row
 
 
 @dataclass
@@ -132,10 +133,12 @@ def _cell_xml(cell: Cell) -> str:
         + _BORDER.format(side="T") + _BORDER.format(side="B")
     )
     fill = solid(cell.fill) if cell.fill else "<a:noFill/>"
-    return (
-        f"<a:tc>{text_body(paras, tag='a:txBody')}"
-        f'<a:tcPr marL="68580" marR="68580" marT="27432" marB="27432" anchor="ctr">{borders}{fill}</a:tcPr></a:tc>'
-    )
+    tc_pr = f'<a:tcPr marL="68580" marR="68580" marT="27432" marB="27432" anchor="ctr">{borders}{fill}</a:tcPr>'
+    if cell.span <= 1:
+        return f"<a:tc>{text_body(paras, tag='a:txBody')}{tc_pr}</a:tc>"
+    # merged cells: the first carries gridSpan, each covered column still needs an <a:tc hMerge>
+    covered = f'<a:tc hMerge="1">{text_body([], tag="a:txBody")}{tc_pr}</a:tc>' * (cell.span - 1)
+    return f'<a:tc gridSpan="{cell.span}">{text_body(paras, tag="a:txBody")}{tc_pr}</a:tc>{covered}'
 
 
 def table_frame(sid: int, name: str, box: Box, col_widths: Sequence[int], rows: Sequence[Row]) -> str:

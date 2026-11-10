@@ -166,7 +166,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"\nerror: cannot use the template {template}: {exc}")
         return EXIT_FAILED
     report = build_report(s, versions, prev, current.week, axis, series)
-    render(report, deck, s.title_layout, s.content_layout, s.rows_per_slide)
+    render(report, deck, s.title_layout, s.content_layout, s.rows_per_slide, s.footer_text)
     target = args.out or os.path.join(os.path.dirname(os.path.abspath(args.input)), output.default_name(s.project, current.week))
     target = output.free_path(target, args.force)
     try:

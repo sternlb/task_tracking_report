@@ -22,6 +22,7 @@ class Settings:
     template: str = ""
     title_layout: str = "Title Slide"
     content_layout: str = "Title Only"
+    footer_text: str = ""
 
 
 @dataclass
