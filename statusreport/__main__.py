@@ -1,12 +1,15 @@
 """Command line (R-OP-1).
 
-    python -m statusreport --init Tasks.xlsx
-    python -m statusreport Tasks.xlsx [--polarion export.xlsx] [--date 2026-11-10]
-                                      [--template customer.pptx] [--out deck.pptx] [--no-save] [--force]
-    python -m statusreport Tasks.xlsx --check
+    python statusreport.pyz --init Tasks.xlsx
+    python statusreport.pyz Tasks.xlsx [--polarion export.xlsx] [--date 2026-11-10]
+                                       [--template customer.pptx] [--out deck.pptx] [--no-save] [--force] [-v]
+    python statusreport.pyz Tasks.xlsx --check
+
+(``python -m statusreport`` works the same from a source checkout.)
 
 A normal run writes the deck next to the workbook and stores this week's
 snapshot in history/ (R-HI-1). --no-save writes only the deck, --check nothing.
+Exit codes: 0 OK, 1 done but rows with errors were skipped, 2 nothing written.
 """
 
 from __future__ import annotations
@@ -45,6 +48,7 @@ def _parse_args(argv: Optional[List[str]]):
     ap.add_argument("--template", metavar="PPTX", help="customer PowerPoint template (overrides the Settings sheet)")
     ap.add_argument("--out", metavar="PPTX", help="output file (default: '<Project> Status <week>.pptx' next to the input)")
     ap.add_argument("--force", action="store_true", help="overwrite existing output files")
+    ap.add_argument("-v", "--verbose", action="store_true", help="list every task with its values (always on with --check)")
     ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return ap.parse_args(argv)
 
@@ -101,6 +105,19 @@ def _print_versions(versions: List[VersionStatus], prev: Optional[history.Snapsh
         print("\n* Start was empty and is derived from Due minus the estimate (working days).")
 
 
+def _print_summary(versions: List[VersionStatus], prev: Optional[history.Snapshot]) -> None:
+    """One line per version for the normal weekly run (details with --verbose)."""
+    print()
+    for vs in versions:
+        pv = prev.versions.get(vs.name) if prev else None
+        lights = Counter(t.light for t in vs.tasks)
+        mix = ", ".join(f"{lights[c]} {c}" for c in ("red", "orange", "green", "grey") if lights[c])
+        print(
+            f"  Version {vs.name:<12} {_pct(vs.progress)} {_prev_pct(prev, pv, pv.progress if pv else None)}"
+            f" {vs.light.upper():<7} {len(vs.tasks):>3} task(s): {mix}"
+        )
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     for stream in (sys.stdout, sys.stderr):
         try:
@@ -108,6 +125,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         except AttributeError:
             pass
     args = _parse_args(argv)
+    try:
+        return _run(args)
+    except KeyboardInterrupt:
+        print("\ncancelled.")
+        return EXIT_FAILED
+    except Exception as exc:  # last resort: a readable message instead of a bare traceback
+        import traceback
+
+        print(f"\nunexpected error: {type(exc).__name__}: {exc}")
+        print("Please send this output to the maintainer. Details:")
+        traceback.print_exc(file=sys.stdout)
+        return EXIT_FAILED
+
+
+def _run(args) -> int:
     if args.init:
         return _init(args.input, args.force)
 
@@ -143,7 +175,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     prev_text = f"previous week {prev.week} ({prev.report_date.isoformat()})" if prev else "no previous week yet"
     print(f"History:      {len(snapshots)} snapshot(s), {prev_text}; trend {axis[0]} .. {axis[-1]} ({len(keys)} week(s))")
 
-    _print_versions(versions, prev)
+    if args.check or args.verbose:
+        _print_versions(versions, prev)
+    else:
+        _print_summary(versions, prev)
 
     issues = sorted(result.issues + calc_issues + hist_issues, key=lambda i: (i.sheet, i.row))
     if issues:
