@@ -48,6 +48,21 @@ class Task:
 
 
 @dataclass
+class VersionStatus:
+    """Aggregated status of one software version (R-CA-4, R-CA-5)."""
+
+    name: str
+    tasks: List[Task]
+    progress: Optional[float] = None  # over all tasks with a progress value
+    expected: Optional[float] = None  # over the tasks that have progress and a plan
+    light: str = "grey"
+    start: Optional[dt.date] = None  # earliest Start of its tasks
+    due: Optional[dt.date] = None  # latest Due of its tasks
+    weighting: str = "estimate"  # "estimate" or "equal" (an estimate was missing)
+    uncounted: int = 0  # tasks without a progress value
+
+
+@dataclass
 class Issue:
     level: str  # "error" (row skipped) or "warning"
     sheet: str

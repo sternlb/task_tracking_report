@@ -14,7 +14,9 @@ from collections import Counter
 from typing import List, Optional
 
 from . import __version__, parse
+from .calc import compute
 from .loader import InputError, load
+from .model import VersionStatus
 from .template import template_bytes
 from .xlsx_read import XlsxError
 
@@ -48,6 +50,22 @@ def _init(path: str, force: bool) -> int:
     return EXIT_OK
 
 
+def _pct(value: Optional[float]) -> str:
+    return "  -  " if value is None else f"{value:3.0f} %"
+
+
+def _print_versions(versions: List[VersionStatus]) -> None:
+    for vs in versions:
+        note = "weighted by estimate" if vs.weighting == "estimate" else "plain average (estimate missing)"
+        if vs.uncounted:
+            note += f", {vs.uncounted} task(s) without progress"
+        due = vs.due.isoformat() if vs.due else "-"
+        print(f"\nVersion {vs.name}: {_pct(vs.progress)}  expected {_pct(vs.expected)}  {vs.light.upper():<6}  due {due}  ({note})")
+        for t in vs.tasks:
+            override = " (override)" if t.light_override else ""
+            print(f"  {t.id:<14} {_pct(t.progress)}  expected {_pct(t.expected)}  {t.light:<6}{override}  {t.title[:40]}")
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     for stream in (sys.stdout, sys.stderr):
         try:
@@ -78,11 +96,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"Source:       Tasks sheet" + (f" + {result.import_source}" if result.import_source else ""))
     per_version = Counter(t.version for t in result.tasks)
     print(f"Tasks:        {len(result.tasks)} in {len(per_version)} version(s)")
-    for version in sorted(per_version, key=parse.natural_key):
-        print(f"  {version:<16} {per_version[version]:>4}")
-    if result.issues:
-        print(f"\n{len(result.errors)} error(s), {len(result.issues) - len(result.errors)} warning(s):")
-        for issue in result.issues:
+    print(f"Thresholds:   orange > {s.orange_pp:g} pp, red > {s.red_pp:g} pp behind")
+
+    versions, calc_issues = compute(result.tasks, s)
+    _print_versions(versions)
+
+    issues = sorted(result.issues + calc_issues, key=lambda i: (i.sheet, i.row))
+    if issues:
+        print(f"\n{len(result.errors)} error(s), {len(issues) - len(result.errors)} warning(s):")
+        for issue in issues:
             print("  " + str(issue))
     if not args.check:
         print("\nDeck generation follows in milestone M5; nothing written.")
