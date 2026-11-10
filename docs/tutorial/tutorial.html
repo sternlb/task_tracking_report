@@ -67,6 +67,10 @@ nav.toc a {
 }
 nav.toc a:hover { border-color: var(--navy); }
 
+/* video */
+section.video { display: grid; gap: 0.6rem; }
+section.video video { width: 100%; max-width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #000; display: block; }
+
 /* the flow: workbook -> launcher -> deck */
 .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 1.25rem; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
 .flow .node { display: grid; gap: 0.15rem; padding: 0.7rem 0.9rem; border-radius: 8px; background: var(--navy-soft); min-width: 0; flex: 1 1 10rem; }
@@ -189,6 +193,13 @@ footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
     <a href="#spickzettel">Spickzettel</a>
   </nav>
 </header>
+
+<section class="video" id="video" aria-label="Video">
+  <video controls playsinline preload="metadata" poster="video/poster.png" src="video/tutorial.mp4">
+    Dein Browser kann das Video nicht abspielen.
+  </video>
+  <p class="sheet-caption">Das Tool in 80 Sekunden: einrichten, Aufgaben pflegen, Excel auf das Tool ziehen, Folien lesen. Ohne Ton, alle Erklärungen stehen im Bild.</p>
+</section>
 
 <!-- ================================================================== -->
 <section class="part" id="einrichten">

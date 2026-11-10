@@ -2,8 +2,9 @@
 
     python tools/build_tutorial.py [out.html] [--fragment]
 
-Source: docs/tutorial/tutorial.html (references img/*.png). The images are embedded
-as data URIs, so the result works offline and can be mailed or put on a share. By
+Source: docs/tutorial/tutorial.html (references img/*.png and video/tutorial.mp4,
+which tools/make_tutorial_video.ps1 creates). Images and video are embedded as data
+URIs, so the result works offline and can be mailed or put on a share. By
 default it is wrapped into a complete HTML document; --fragment writes the page
 content only (for publishing as a claude.ai artifact, which adds its own skeleton).
 """
@@ -20,13 +21,19 @@ SRC = os.path.join(ROOT, "docs", "tutorial", "tutorial.html")
 DEFAULT_OUT = os.path.join(ROOT, "dist", "Tutorial (Deutsch).html")
 
 
-def inline_images(html: str, base: str) -> str:
-    def repl(m: "re.Match[str]") -> str:
-        with open(os.path.join(base, m.group(1)), "rb") as fh:
-            data = base64.b64encode(fh.read()).decode("ascii")
-        return f'src="data:image/png;base64,{data}"'
+MIME = {".png": "image/png", ".mp4": "video/mp4"}
 
-    return re.sub(r'src="(img/[^"]+\.png)"', repl, html)
+
+def inline_images(html: str, base: str) -> str:
+    """Embed every local ``src``/``poster`` file under img/ or video/ as a data URI."""
+
+    def repl(m: "re.Match[str]") -> str:
+        attr, rel = m.group(1), m.group(2)
+        with open(os.path.join(base, rel), "rb") as fh:
+            data = base64.b64encode(fh.read()).decode("ascii")
+        return f'{attr}="data:{MIME[os.path.splitext(rel)[1]]};base64,{data}"'
+
+    return re.sub(r'\b(src|poster)="((?:img|video)/[^"]+\.(?:png|mp4))"', repl, html)
 
 
 def build(out: str = DEFAULT_OUT, fragment: bool = False) -> str:

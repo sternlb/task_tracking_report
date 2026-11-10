@@ -105,7 +105,9 @@ class DeliveryTest(unittest.TestCase):
             tutorial = fh.read()
         self.assertTrue(tutorial.startswith("<!doctype html>"))
         self.assertNotIn('src="img/', tutorial)  # images embedded, works offline
-        self.assertEqual(tutorial.count("data:image/png;base64,"), 4)
+        self.assertNotIn('="video/', tutorial)
+        self.assertEqual(tutorial.count("data:image/png;base64,"), 5)  # 4 slides + video poster
+        self.assertEqual(tutorial.count("data:video/mp4;base64,"), 1)
         with zipfile.ZipFile(self.pyz) as zf:
             names = zf.namelist()
         self.assertIn("__main__.py", names)
