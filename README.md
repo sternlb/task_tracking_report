@@ -7,19 +7,23 @@ and a traffic light per task.
 
 Runs with plain Python 3.9+, standard library only, no installation.
 
-**Status:** M4 (history) done, the deck follows in M5 — see
+**Status:** M5 (deck) done; customer template (M6) and packaging (M7) follow — see
 [docs/requirements.md](docs/requirements.md), [docs/design.md](docs/design.md) and
 [docs/tasks.md](docs/tasks.md).
 
-## Usage so far
+## Usage
 
 ```
 python -m statusreport --init Tasks.xlsx                       # create the input workbook
 python -m statusreport Tasks.xlsx --check                      # validate and calculate, write nothing
-python -m statusreport Tasks.xlsx --polarion export.xlsx --check
-python -m statusreport Tasks.xlsx                              # weekly run: stores history/YYYY-Www.json
-python -m statusreport Tasks.xlsx --no-save                    # trial run without storing the week
+python -m statusreport Tasks.xlsx                              # weekly run: deck + history/YYYY-Www.json
+python -m statusreport Tasks.xlsx --polarion export.xlsx       # with a separate Polarion export
+python -m statusreport Tasks.xlsx --no-save                    # trial run: deck only, week not stored
+python -m statusreport Tasks.xlsx --template customer.pptx     # use a customer template
 ```
+
+Demo with seven weeks of data: `python tools/make_demo.py out/demo`, then
+`python -m statusreport out/demo/Tasks.xlsx`.
 
 ## Development
 

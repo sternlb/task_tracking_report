@@ -46,6 +46,9 @@ statusreport/
   loader.py          input workbook -> tasks + issues (settings, mapping, import merge by ID)
   calc.py            progress, expected %, traffic lights, version aggregation (R-CA-*)
   history.py         weekly JSON snapshots in history/, previous week, trend series (R-HI-*)
+  report.py          presentation-neutral report model: slide texts, rows, "(50 %)"/"(new)"/"(–)"
+  render.py          report model -> slides on a Deck (table styling, lights, legend, chart)
+  output.py          output file name, " (2)" suffix instead of overwriting, template path
   template.py        the empty input workbook for --init
   xmlutil.py         namespaces, XML escaping, XML declaration
   xlsx_write.py      minimal .xlsx writer: styles, widths, frozen header, drop-downs
@@ -62,11 +65,15 @@ tools/
   opc_lint.py        CLI around pptx/lint.py
   ppt_check.ps1      dev only: opens a deck in installed PowerPoint, exports PNGs
   make_fixtures.ps1  dev only: creates tests/fixtures/*.xlsx with real Excel
+  make_demo.py       demo input + 6 weeks of history (python tools/make_demo.py out/demo)
 tests/               unittest only; fixtures/ holds files saved by real Excel (do not regenerate casually)
 docs/                requirements.md, design.md, tasks.md
 ```
 
-Planned modules (see design section 3): `report.py` and the slide builders (M5).
+Data flow of a run: `loader.load` → `calc.compute` → `history` (previous week, trend) →
+`report.build_report` → `render.render` onto `Deck.default()` or the customer template →
+`deck.save` → `history.save`. Keep slide content decisions in `report.py` and the
+PowerPoint details in `render.py`/`pptx/`.
 
 ### Input handling in short
 
@@ -125,6 +132,8 @@ Planned modules (see design section 3): `report.py` and the slide builders (M5).
 - Run the tests: `python -m unittest discover -s tests`
 - Create an input workbook: `python -m statusreport --init out/Tasks.xlsx`
 - Validate an input: `python -m statusreport tests/fixtures/excel_with_import.xlsx --check`
+- Full demo deck: `python tools/make_demo.py out/demo` then `python -m statusreport out/demo/Tasks.xlsx`
+- Look at it: `powershell -File tools\ppt_check.ps1 "out\demo\Project Falcon Status 2026-W46.pptx" -PngDir out\png`
 - After changing the base design: `python tools/build_base_pptx.py`
 - Sample deck: `python tools/spike.py`, then `python tools/opc_lint.py out/spike.pptx`
 - When finishing a task from `docs/tasks.md`, tick its checkbox in the same commit.

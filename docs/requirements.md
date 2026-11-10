@@ -175,7 +175,7 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   % outside 0–100, unknown version in the version order) shall be listed in the console
   with sheet, row and reason. Rows with errors are skipped and the report is still
   created. Structural errors (sheet or required column missing) stop the run with a
-  clear message.
+  clear message. Without any valid task nothing is written (exit code 2).
 - **R-OP-4 (M)** The tool shall never modify the input Excel.
 
 ## 5. Non-functional requirements

@@ -47,6 +47,8 @@ sw-status-report/
 │   ├── calc.py            progress, expected, lights, version aggregation
 │   ├── history.py         load/save snapshots, previous week, trend series
 │   ├── report.py          builds the presentation-neutral report model
+│   ├── render.py          report model -> slides on a Deck
+│   ├── output.py          output file name, overwrite suffix, template path
 │   └── pptx/
 │       ├── opc.py         package read/write: parts, rels, [Content_Types].xml
 │       ├── deck.py        open base/template, strip slides, find layouts, add slides
@@ -241,7 +243,8 @@ Owner and Due are not shown to the customer (R-OUT-3).
 - The legend sits at the bottom of the content area, not under the last row: rows grow
   with their text, so the declared row heights are only a minimum (seen in the M1 spike). Titles
   longer than 70 characters and comments longer than 60 characters are shortened with `…`.
-- Legend line under the table, 9 pt: `● on track  ● ≤ 25 pp behind  ● > 25 pp behind or overdue  ● not assessable · (…) = previous week`.
+- Legend line at the bottom of the content area, 9 pt, using the thresholds from the
+  settings: `● on track  ● behind by more than 10 pp  ● behind by more than 25 pp or overdue  ● not assessable  (…) = previous week`.
 
 Light colours: green `#2E9E44`, orange `#F0A202`, red `#D62828`, grey `#A0A0A0`.
 

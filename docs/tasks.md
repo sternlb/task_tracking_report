@@ -107,11 +107,33 @@ Lessons:
 
 ## M5 — Deck without template (R-OUT-1…7, R-OUT-9)
 
-- [ ] T-5.1 `report.py`: report model (slides, rows, values incl. previous week)
-- [ ] T-5.2 Title slide and version tables with row splitting, highlighting, lights, legend
-- [ ] T-5.3 Trend chart with embedded workbook
-- [ ] T-5.4 **Manual check in PowerPoint** with example data covering 3 weeks
-- [ ] T-5.5 Output file name and overwrite protection (R-OUT-9)
+- [x] T-5.1 `report.py`: report model (slides, rows, values incl. previous week)
+- [x] T-5.2 Title slide and version tables with row splitting, highlighting, lights, legend
+- [x] T-5.3 Trend chart with embedded workbook
+- [x] T-5.4 **Manual check in PowerPoint** with example data covering 3 weeks
+      (`tools/make_demo.py`: 22 tasks, 3 versions, 7 weeks; rendered by PowerPoint 365)
+- [x] T-5.5 Output file name and overwrite protection (R-OUT-9)
+
+**M5 result (2026-11-10):**
+- A normal run writes `<Project> Status <YYYY>-W<WW>.pptx` next to the workbook, then
+  stores the snapshot. If the deck cannot be written, the week is not stored either.
+- The deck has a title slide, the trend chart, and per version a table (continued
+  slides repeat the total row) with the legend at the bottom.
+- An existing deck gets a ` (2)` suffix unless `--force` is given. `--out` and
+  `--template` are available, and the Settings `Template file` is resolved relative to
+  the workbook.
+- No tasks → nothing written, exit 2. A deck that is open in PowerPoint gives a clear
+  message.
+- PowerPoint 365 opens the demo deck and renders all 6 slides as designed: trend over
+  7 weeks, 1.2.0 on 2 slides, `(new)`, light changes, grey rows, the shortened title.
+- 95 tests pass on Python 3.11 and 3.13; the demo runs end to end as a test.
+
+Seen in the check, acceptable for now:
+- Comments longer than about 38 characters wrap to a second line; the row grows and
+  the page still fits with 12 rows.
+- The version light can be green while several tasks are orange, because it compares
+  weighted totals (R-CA-5). That works as specified, but it is worth explaining in the
+  first customer meeting.
 
 ## M6 — Customer template (R-OUT-8)
 
