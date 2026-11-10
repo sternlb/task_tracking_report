@@ -61,8 +61,9 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   date (empty = today), the orange and red thresholds (default 10 and 25 percentage
   points), hours per day for duration parsing (default 8), the states that count as done
   (default `done, closed, resolved, verified`), the maximum number of table rows per
-  slide (default 12), the number of weeks in the trend chart (default 12), and the
-  version order (empty = alphabetical).
+  slide (default 12), the number of weeks in the trend chart (default 12), the
+  version order (empty = natural sort), the template file and its layout names, and the
+  footer text (added in M6).
 - **R-IN-4 (M)** The `Import` sheet shall accept a Polarion Excel export pasted as-is
   (header row plus data). As an alternative, the tool shall accept the path to a separate
   Polarion export file on the command line.
@@ -158,7 +159,18 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   16:9 deck.
 - **R-OUT-8 (M)** With a template (`--template file.pptx`) the tool shall use its slide
   master, layouts, theme colours and fonts. The layouts used are chosen by name and
-  can be configured. The template's existing slides are not copied.
+  can be configured. The template's existing slides are not copied. Added in M6:
+  - `.potx` templates are accepted; the output is always a `.pptx`.
+  - If no layout has the configured name (layout names depend on the Office language:
+    "Title Only" is "Nur Titel"), the layout is chosen by its language-independent type
+    (title slide: `title`; content: `titleOnly`, then `obj`), with one warning that lists
+    the available names.
+  - Content slides carry the template's slide number, and its footer if the Settings
+    value `Footer text` is set or the layout has a fixed footer text. The title slide
+    has neither, and the date placeholder is not used.
+  - Tables and charts stay inside the content area and above the footer zone. The
+    table is fitted to that area: fonts shrink to at most 80 %, texts are shortened
+    to one line of their column, and `Rows per slide` is a maximum.
 - **R-OUT-9 (M)** Default output file name: `<Project> Status <YYYY>-W<WW>.pptx` next to
   the input Excel. An existing file is replaced only with `--force`; otherwise a suffix is
   added.

@@ -66,6 +66,7 @@ tools/
   ppt_check.ps1      dev only: opens a deck in installed PowerPoint, exports PNGs
   make_fixtures.ps1  dev only: creates tests/fixtures/*.xlsx with real Excel
   make_demo.py       demo input + 6 weeks of history (python tools/make_demo.py out/demo)
+  make_templates.ps1 dev only: foreign test templates (German names, .potx, 4:3) with real PowerPoint
 tests/               unittest only; fixtures/ holds files saved by real Excel (do not regenerate casually)
 docs/                requirements.md, design.md, tasks.md
 ```
@@ -106,6 +107,11 @@ PowerPoint details in `render.py`/`pptx/`.
   `"accent1/20"` 20 % tint of a theme slot.
 - Table row heights are minimums; rows grow with their text. Do not position things
   below a table by adding up row heights.
+- Templates (M6): never rely on layout names alone, since they are localised ("Nur Titel").
+  `Deck.layout(name, role)` falls back to the layout type. Everything on a slide has
+  to fit `Deck.content_area(layout)`, which already excludes the footer zone; the
+  table sizes itself in `render.metrics`. Test any change against
+  `tests/fixtures/templates/*` (`tests/test_templates.py`), not only against the base.
 
 ## Domain rules in short (full text in docs/requirements.md §4.2)
 

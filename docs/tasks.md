@@ -137,11 +137,35 @@ Seen in the check, acceptable for now:
 
 ## M6 — Customer template (R-OUT-8)
 
-- [ ] T-6.1 Remove slides from a foreign template cleanly (incl. notes, charts, media)
-- [ ] T-6.2 Layouts by name, fallback, content area from the placeholder
-- [ ] T-6.3 Test with 2–3 public templates (different sizes, 4:3, without `Title Only`)
+- [x] T-6.1 Remove slides from a foreign template cleanly (incl. notes, charts, media)
+- [x] T-6.2 Layouts by name, fallback, content area from the placeholder
+- [x] T-6.3 Test with 2–3 public templates (different sizes, 4:3, without `Title Only`)
+      — instead of downloads: 4 templates built by real PowerPoint (`tools/make_templates.ps1`)
 - [ ] T-6.4 **As soon as the template arrives:** set the layout names, run a manual
       check, adjust colours/columns if needed (OP-2)
+
+**M6 result (2026-11-10):**
+- Test templates saved by PowerPoint 365 (German Office):
+  - Office default 16:9, as `.pptx` and `.potx`, with slides, notes, a picture,
+    sections and a custom show;
+  - "Facet" in 4:3;
+  - "Dividend" reduced to two renamed layouts ("Cover", "Content").
+- Found and fixed with them:
+  1. `.potx` was rejected → now accepted.
+  2. German layout names made the fallback pick a random narrow layout → fallback by
+     layout type.
+  3. Tables overflowed on smaller content areas (4:3, large title bands) → table fitting
+     (fewer rows, smaller fonts, shortening by column width).
+  4. "Version total" wrapped in narrow ID columns → spans two columns.
+  5. The template's slide numbers and footers were missing → copied onto content slides
+     (new setting `Footer text`).
+- Rendered in PowerPoint on all four templates plus the built-in base: the tables fit,
+  the legend sits below the table, theme colours and fonts are taken over, and slide
+  numbers appear.
+- 109 tests pass on Python 3.11 and 3.13.
+- Not covered by the generated templates: old charts on template slides (AddChart2 does
+  not work without a window). Removing chart parts is tested with our own deck as the
+  template.
 
 ## M7 — Delivery
 

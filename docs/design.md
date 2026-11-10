@@ -203,15 +203,30 @@ File `history/2026-W46.json`:
 2. Remove all existing slides: entries in `presentation.xml/p:sldIdLst`, their rels, their
    parts and dependent parts (notes slides, charts and embeddings used only by them),
    and their entries in `[Content_Types].xml`.
-3. Find the layouts by name (`p:cSld/@name`). The settings `Title layout` (default
-   `Title Slide`) and `Content layout` (default `Title Only`) can be changed. Fallback:
-   first layout with a title placeholder, plus a warning.
+3. Find the layouts by name (`p:cSld/@name`, case-insensitive). The settings
+   `Title layout` (default `Title Slide`) and `Content layout` (default `Title Only`)
+   can be changed. Fallback by `sldLayout/@type` (M6): title slide → `title`; content →
+   `titleOnly`, `obj`, `tx`; then a layout with a `ctrTitle` (title) or the title layout
+   with the fewest placeholders (content). One warning per name and role lists the
+   available layout names. A `.potx` (template main content type) is accepted, and its
+   main part is switched to the presentation content type.
 4. Add the slides: each slide references its layout, and title placeholders are filled
    via `p:ph type="title"/"ctrTitle"/"subTitle"`, so position and font come from the
    template.
 5. Content area = bounds of the layout's body/object placeholder (`idx=1`), otherwise
-   the slide area below the title placeholder minus 0.4" margins. The table and chart
-   are placed inside it.
+   the slide area below the title placeholder minus 0.4" margins. In both cases it ends
+   0.1" above the highest footer placeholder (`dt`, `ftr`, `sldNum`) in the lower half
+   of the area. The table and chart are placed inside it.
+5a. Footers (M6): content slides get a copy of the layout's `sldNum` placeholder with a
+   `slidenum` field, and its `ftr` placeholder if there is a footer text (Settings
+   `Footer text`, else the layout's own text). Nothing on the title slide; `dt` is not used.
+5b. Table fitting (`render.metrics`, M6): scale = content width / width of the built-in
+   base, limited to 0.8–1.0 for all font sizes. The number of characters per column is
+   estimated with an average character width of 0.52 em, and texts are shortened to one
+   line. The header gets two lines if a header text would not fit. Row height comes from
+   the value font (14 pt × scale). Rows per slide = min(setting, what fits), at least 3.
+   `report.paginate` then splits the version tables. "Version total" spans the ID and
+   Task columns (`gridSpan`).
 6. Write the package and run the OPC checks from `tools/opc_lint.py` as a self-test
    before saving.
 

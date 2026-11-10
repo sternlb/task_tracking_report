@@ -7,7 +7,8 @@ and a traffic light per task.
 
 Runs with plain Python 3.9+, standard library only, no installation.
 
-**Status:** M5 (deck) done; customer template (M6) and packaging (M7) follow — see
+**Status:** M6 (templates) done, packaging (M7) follows; the real customer template is
+still to come — see
 [docs/requirements.md](docs/requirements.md), [docs/design.md](docs/design.md) and
 [docs/tasks.md](docs/tasks.md).
 
@@ -19,8 +20,13 @@ python -m statusreport Tasks.xlsx --check                      # validate and ca
 python -m statusreport Tasks.xlsx                              # weekly run: deck + history/YYYY-Www.json
 python -m statusreport Tasks.xlsx --polarion export.xlsx       # with a separate Polarion export
 python -m statusreport Tasks.xlsx --no-save                    # trial run: deck only, week not stored
-python -m statusreport Tasks.xlsx --template customer.pptx     # use a customer template
+python -m statusreport Tasks.xlsx --template customer.pptx     # use a customer template (.pptx or .potx)
 ```
+
+Customer template: put its path in Settings `Template file` (relative to the workbook) or
+pass `--template`. If the run warns that a layout was not found, copy the right layout
+name from the warning into `Title layout` / `Content layout`. `Footer text` fills the
+template's footer.
 
 Demo with seven weeks of data: `python tools/make_demo.py out/demo`, then
 `python -m statusreport out/demo/Tasks.xlsx`.
