@@ -241,8 +241,12 @@ Owner and Due are not shown to the customer (R-OUT-3).
   rows light grey. Font from the theme (`+mn-lt`).
 - Column widths as proportions of the content area: 11/40/17/10/22 %.
 - The legend sits at the bottom of the content area, not under the last row: rows grow
-  with their text, so the declared row heights are only a minimum (seen in the M1 spike). Titles
-  longer than 70 characters and comments longer than 60 characters are shortened with `…`.
+  with their text, so the declared row heights are only a minimum (seen in the M1 spike).
+- Titles longer than 62 characters and comments longer than 45 characters are shortened
+  with `…` (tuned in the M5 check: 62 characters fit one line of the Task column).
+- Row height 0.34" (header 0.36"), reduced down to 0.28" if `Rows per slide` would not
+  fit the content area otherwise.
+- The total row is repeated on every continuation slide of a version.
 - Legend line at the bottom of the content area, 9 pt, using the thresholds from the
   settings: `● on track  ● behind by more than 10 pp  ● behind by more than 25 pp or overdue  ● not assessable  (…) = previous week`.
 
