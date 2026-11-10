@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+out/
+dist/
+# generated decks and history from local test runs
+*.pptx
+!statusreport/pptx/base.pptx
+history/
+~$*
