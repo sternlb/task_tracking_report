@@ -45,6 +45,7 @@ statusreport/
   xlsx_read.py       minimal .xlsx reader -> rows of Python values (Percent, date, str, float)
   loader.py          input workbook -> tasks + issues (settings, mapping, import merge by ID)
   calc.py            progress, expected %, traffic lights, version aggregation (R-CA-*)
+  history.py         weekly JSON snapshots in history/, previous week, trend series (R-HI-*)
   template.py        the empty input workbook for --init
   xmlutil.py         namespaces, XML escaping, XML declaration
   xlsx_write.py      minimal .xlsx writer: styles, widths, frozen header, drop-downs
@@ -65,8 +66,7 @@ tests/               unittest only; fixtures/ holds files saved by real Excel (d
 docs/                requirements.md, design.md, tasks.md
 ```
 
-Planned modules (see design section 3): `history.py` (M4), `report.py` and the slide
-builders (M5).
+Planned modules (see design section 3): `report.py` and the slide builders (M5).
 
 ### Input handling in short
 
@@ -115,6 +115,10 @@ builders (M5).
   task overrides do not affect it.
 - Lights are the strings `green`, `orange`, `red`, `grey` (constants in `calc.py`).
 - "Previous week" = the latest snapshot in `history/` before the report week.
+- Week keys are ISO weeks (`2026-W46`, via `history.week_key`); string order = time order.
+  The trend uses the weeks that have snapshots, not every calendar week.
+- `--check` and `--no-save` must never write to `history/`; tests copy fixtures to a
+  temp folder before a normal run.
 
 ## Workflow
 

@@ -7,7 +7,7 @@ and a traffic light per task.
 
 Runs with plain Python 3.9+, standard library only, no installation.
 
-**Status:** M2 (Excel input) done, the deck follows in M5 — see
+**Status:** M4 (history) done, the deck follows in M5 — see
 [docs/requirements.md](docs/requirements.md), [docs/design.md](docs/design.md) and
 [docs/tasks.md](docs/tasks.md).
 
@@ -15,8 +15,10 @@ Runs with plain Python 3.9+, standard library only, no installation.
 
 ```
 python -m statusreport --init Tasks.xlsx                       # create the input workbook
-python -m statusreport Tasks.xlsx --check                      # validate it, list problems
+python -m statusreport Tasks.xlsx --check                      # validate and calculate, write nothing
 python -m statusreport Tasks.xlsx --polarion export.xlsx --check
+python -m statusreport Tasks.xlsx                              # weekly run: stores history/YYYY-Www.json
+python -m statusreport Tasks.xlsx --no-save                    # trial run without storing the week
 ```
 
 ## Development

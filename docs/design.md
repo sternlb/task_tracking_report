@@ -179,9 +179,19 @@ File `history/2026-W46.json`:
 
 - Write as temp file, then rename (atomic, nothing half-written).
 - Previous week = largest week key `< current week` (R-HI-3).
-- Trend series: the last `N` weeks up to and including the current one. Versions = the
-  versions in the current report. Missing values → empty point, the chart shows a gap.
-- Unreadable snapshot → warning, the week is skipped.
+- Trend series: the last `N` weeks *that have a snapshot*, up to and including the
+  current one. The in-memory current snapshot replaces a stored one of the same week
+  (so `--no-save` shows the right values), and snapshots after the report week are
+  ignored. Versions = the versions in the current report. Missing values → empty point,
+  the chart shows a gap.
+- Axis labels `CW 46`; with the two-digit year (`CW 53/26`, `CW 01/27`) when the weeks
+  span a year boundary.
+- Values are stored rounded to 2 decimals. Version snapshots also store `expected`
+  (not shown yet, kept for later use).
+- Unreadable snapshot (bad JSON, unknown schema, week in the file ≠ file name) →
+  warning, the week is skipped. Other files in `history/` are ignored.
+- `generated_at` makes snapshot files differ between runs; NF-2 (determinism) applies
+  to the deck, not to the history.
 
 ## 8. PowerPoint generation
 

@@ -87,9 +87,23 @@ Lessons:
 
 ## M4 — History (R-HI-*)
 
-- [ ] T-4.1 Write snapshots atomically, replace for the same week (R-HI-1, R-HI-2)
-- [ ] T-4.2 Previous week with gaps, trend series (R-HI-3)
-- [ ] T-4.3 `--no-save` (R-HI-4)
+- [x] T-4.1 Write snapshots atomically, replace for the same week (R-HI-1, R-HI-2)
+- [x] T-4.2 Previous week with gaps, trend series (R-HI-3)
+- [x] T-4.3 `--no-save` (R-HI-4)
+
+**M4 result (2026-11-10):**
+- `history.py` writes one JSON snapshot per ISO week next to the input workbook
+  (temp file + rename), and a second run in the same week replaces it.
+- "Previous week" is the latest earlier snapshot, so skipped weeks are fine.
+- The trend data covers the last N weeks that have a snapshot. The in-memory current
+  week replaces a stored one, and snapshots *after* the report week are ignored (for
+  runs with an earlier `--date`).
+- A normal run stores the snapshot; `--check` and `--no-save` write nothing.
+- `--check` now shows the previous values in brackets as on the slide (`(50 %)`,
+  `(new)`, `(-)`), plus light changes (`orange (was green)`).
+- Broken snapshot files become warnings and are skipped.
+- 78 tests pass on Python 3.11 and 3.13, including a simulated run over three weeks
+  through the CLI.
 
 ## M5 — Deck without template (R-OUT-1…7, R-OUT-9)
 
