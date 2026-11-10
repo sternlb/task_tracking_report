@@ -1,0 +1,581 @@
+<title>SW Status Report Anleitung</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column with a numbered step rail (the steps really are a sequence); figures and tables may run wider. */
+:root {
+  --paper: #f3f5f8;
+  --card: #ffffff;
+  --ink: #16202c;
+  --muted: #586577;
+  --line: #d6dde6;
+  --navy: #1f4e79;          /* accent1 of the built-in deck */
+  --navy-soft: #dce7f2;
+  --term-bg: #121a24;
+  --term-ink: #d7e0ea;
+  --term-dim: #8796a8;
+  --green: #2e9e44; --orange: #f0a202; --red: #d62828; --grey: #a0a0a0;
+  --font-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+  --measure: 46rem;
+  --wide: 66rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151d; --card: #16202b; --ink: #e5ebf2; --muted: #9ba8b8; --line: #283545;
+    --navy: #84b4e0; --navy-soft: #1d2f43; --term-bg: #0a0f15; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151d; --card: #16202b; --ink: #e5ebf2; --muted: #9ba8b8; --line: #283545;
+  --navy: #84b4e0; --navy-soft: #1d2f43; --term-bg: #0a0f15; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font: 400 1rem/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 4rem;
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.01em; }
+h2 { font-size: 1.6rem; }
+h3 { font-size: 1.15rem; }
+p { margin: 0; }
+a { color: var(--navy); }
+code, kbd, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+code { background: var(--navy-soft); padding: 0.05em 0.35em; border-radius: 4px; }
+:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+
+.wrap { max-width: var(--wide); margin-inline: auto; }
+.col { max-width: var(--measure); }
+.stack { display: grid; gap: 1rem; }
+.stack-lg { display: grid; gap: 2.5rem; }
+
+/* header */
+header.top { padding-block: 3rem 2rem; display: grid; gap: 1.25rem; }
+.eyebrow { font: 600 0.78rem/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.lead { font-size: 1.15rem; color: var(--muted); max-width: var(--measure); }
+nav.toc { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+nav.toc a {
+  text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--card);
+  padding: 0.35rem 0.8rem; border-radius: 999px; font-size: 0.9rem;
+}
+nav.toc a:hover { border-color: var(--navy); }
+
+/* the flow: workbook -> launcher -> deck */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 1.25rem; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+.flow .node { display: grid; gap: 0.15rem; padding: 0.7rem 0.9rem; border-radius: 8px; background: var(--navy-soft); min-width: 0; flex: 1 1 10rem; }
+.flow .node b { font-family: var(--font-mono); font-weight: 500; font-size: 0.92rem; overflow-wrap: anywhere; }
+.flow .node span { color: var(--muted); font-size: 0.85rem; }
+.flow .arrow { color: var(--muted); font-size: 1.4rem; flex: 0 0 auto; }
+
+/* parts and steps */
+section.part { padding-top: 3rem; display: grid; gap: 1.75rem; }
+.part-head { display: grid; gap: 0.4rem; border-top: 2px solid var(--ink); padding-top: 1rem; }
+.step { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 1rem; }
+.step .num {
+  width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center;
+  background: var(--navy); color: var(--paper); font: 700 1rem/1 var(--font-display);
+}
+.step .body { display: grid; gap: 0.9rem; min-width: 0; }
+.note { border-left: 3px solid var(--navy); padding: 0.6rem 0.9rem; background: var(--card); color: var(--ink); }
+.note.warn { border-left-color: var(--orange); }
+ul.tight { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; }
+
+/* command lines with copy */
+.cmd { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--term-bg); }
+.cmd code { flex: 1; background: transparent; color: var(--term-ink); padding: 0.6rem 0.8rem; overflow-x: auto; white-space: pre; border-radius: 0; }
+.cmd button {
+  border: 0; border-left: 1px solid #2a3646; background: #1b2633; color: var(--term-ink);
+  font: 500 0.82rem/1 var(--font-body); padding: 0 0.9rem; cursor: pointer;
+}
+.cmd button:hover { background: #24324300; background: #243243; }
+
+/* Excel-like sheet replicas */
+.sheet-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+table.sheet { border-collapse: collapse; font-size: 0.84rem; min-width: 100%; font-variant-numeric: tabular-nums; }
+table.sheet th, table.sheet td { border: 1px solid var(--line); padding: 0.3rem 0.55rem; text-align: left; white-space: nowrap; }
+table.sheet thead th { background: #1f4e79; color: #fff; font-weight: 600; }
+table.sheet thead th.req::after { content: " *"; color: #ffd27a; }
+table.sheet .rowno { background: var(--paper); color: var(--muted); text-align: right; width: 2.2rem; font-family: var(--font-mono); }
+table.sheet tr.example td { color: var(--muted); font-style: italic; }
+.sheet-caption { color: var(--muted); font-size: 0.85rem; }
+.tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; font-size: 0.8rem; }
+.tabs span { padding: 0.2rem 0.6rem; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; color: var(--muted); background: var(--paper); }
+.tabs span.on { background: var(--card); color: var(--ink); font-weight: 600; }
+
+/* console replica */
+pre.term {
+  margin: 0; background: var(--term-bg); color: var(--term-ink); border-radius: 8px; padding: 1rem 1.1rem;
+  font: 400 0.8rem/1.55 var(--font-mono); overflow-x: auto;
+}
+pre.term .dim { color: var(--term-dim); }
+pre.term .g { color: #6fd08a; } pre.term .o { color: #ffc24d; } pre.term .r { color: #ff7a7a; }
+pre.term mark { background: #2b3e57; color: inherit; border-radius: 3px; padding: 0 0.15em; }
+
+/* slides */
+figure.slide { margin: 0; display: grid; gap: 0.6rem; }
+figure.slide img { width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); background: #fff; display: block; }
+figure.slide figcaption { color: var(--muted); font-size: 0.88rem; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; }
+dl.read { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.55rem 1rem; align-items: baseline; }
+dl.read dt { font-family: var(--font-mono); font-size: 0.9rem; white-space: nowrap; }
+dl.read dd { margin: 0; }
+.dot { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; vertical-align: -0.05em; }
+.dot.green { background: var(--green); } .dot.orange { background: var(--orange); } .dot.red { background: var(--red); } .dot.grey { background: var(--grey); }
+.big { font-weight: 700; }
+.small { font-size: 0.8em; color: var(--muted); }
+
+/* traffic light calculator */
+.calc { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; display: grid; gap: 1.25rem; }
+.calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 0.9rem 1rem; }
+.field { display: grid; gap: 0.3rem; min-width: 0; }
+.field label { font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+.field input, .field select {
+  font: inherit; font-size: 0.95rem; padding: 0.45rem 0.55rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--paper); color: var(--ink); min-width: 0; width: 100%;
+}
+.mode { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem; }
+.result { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: center; padding: 1rem; border-radius: 8px; background: var(--paper); }
+.lamp { width: 3.2rem; height: 3.2rem; border-radius: 50%; background: var(--grey); box-shadow: inset 0 -4px 0 rgba(0,0,0,.15); transition: background .2s; }
+.result .verdict { font: 700 1.25rem/1.2 var(--font-display); }
+.result .why { color: var(--muted); font-size: 0.92rem; }
+.figures { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-variant-numeric: tabular-nums; font-size: 0.92rem; }
+ol.rules { margin: 0; padding-left: 1.4rem; display: grid; gap: 0.25rem; color: var(--muted); font-size: 0.92rem; }
+ol.rules li.hit { color: var(--ink); font-weight: 600; }
+ol.rules li.hit::marker { color: var(--navy); }
+
+/* FAQ */
+details { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 0.7rem 1rem; }
+details + details { margin-top: 0.5rem; }
+summary { cursor: pointer; font-weight: 600; }
+details > div { padding-top: 0.6rem; display: grid; gap: 0.5rem; }
+
+/* cheat sheet */
+table.cheat { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+table.cheat td { border-top: 1px solid var(--line); padding: 0.55rem 0.4rem; vertical-align: top; }
+table.cheat td:first-child { font-family: var(--font-mono); font-size: 0.85rem; white-space: nowrap; color: var(--navy); }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Tutorial · Version 0.9.0</div>
+  <h1>SW Status Report Anleitung</h1>
+  <p class="lead">Von der Aufgabenliste in Excel zum fertigen Status-Deck für den Kundentermin. Einmal einrichten, danach jede Woche drei Handgriffe.</p>
+  <div class="flow" aria-label="Ablauf">
+    <div class="node"><b>Tasks.xlsx</b><span>deine Aufgabenliste</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="node"><b>make_report.cmd</b><span>Excel draufziehen</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="node"><b>… Status 2026-W46.pptx</b><span>das Deck für den Termin</span></div>
+    <div class="node"><b>history\</b><span>Gedächtnis für die Vorwoche</span></div>
+  </div>
+  <nav class="toc" aria-label="Inhalt">
+    <a href="#einrichten">Einmal einrichten</a>
+    <a href="#woche">Jede Woche</a>
+    <a href="#lesen">Folien lesen</a>
+    <a href="#ampel">Ampel verstehen</a>
+    <a href="#polarion">Polarion</a>
+    <a href="#vorlage">Kundenvorlage</a>
+    <a href="#probleme">Wenn etwas hakt</a>
+    <a href="#spickzettel">Spickzettel</a>
+  </nav>
+</header>
+
+<!-- ================================================================== -->
+<section class="part" id="einrichten">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 1 · etwa 10 Minuten, nur einmal</div>
+    <h2>Einmal einrichten</h2>
+  </div>
+
+  <div class="step col">
+    <div class="num">1</div>
+    <div class="body">
+      <h3>ZIP entpacken</h3>
+      <p>Entpacke <code>sw-status-report-0.9.0.zip</code> an einen festen Ort, zum Beispiel <code>C:\Tools\sw-status-report</code>. Darin liegen vier Dateien:</p>
+      <ul class="tight">
+        <li><code>statusreport.pyz</code>: das eigentliche Tool, eine einzige Datei</li>
+        <li><code>make_report.cmd</code>: der Startknopf, auf den du die Excel ziehst</li>
+        <li><code>Tasks.xlsx</code>: eine leere Eingabe-Excel als Vorlage</li>
+        <li><code>README.md</code>: die englische Kurzreferenz</li>
+      </ul>
+      <p>Installiert wird nichts, und Adminrechte brauchst du nicht.</p>
+    </div>
+  </div>
+
+  <div class="step col">
+    <div class="num">2</div>
+    <div class="body">
+      <h3>Prüfen, ob Python da ist</h3>
+      <p>Öffne die Eingabeaufforderung (Windows-Taste, <kbd>cmd</kbd>, Enter) und tippe:</p>
+      <div class="cmd"><code>py --version</code><button type="button" data-copy="py --version">Kopieren</button></div>
+      <p>Erscheint <code>Python 3.9</code> oder höher, passt alles. Kommt eine Fehlermeldung, probiere <code>python --version</code>. Wenn auch das nicht klappt, muss Python 3 installiert werden, da hilft die IT.</p>
+    </div>
+  </div>
+
+  <div class="step col">
+    <div class="num">3</div>
+    <div class="body">
+      <h3>Projektordner anlegen und Settings ausfüllen</h3>
+      <p>Lege pro Kundenprojekt einen eigenen Ordner an und kopiere <code>Tasks.xlsx</code> hinein. Öffne die Datei und trage im Blatt <b>Settings</b> mindestens Projekt und Kunde ein:</p>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="tabs" aria-hidden="true"><span>Read me</span><span>Tasks</span><span>Import</span><span>Mapping</span><span class="on">Settings</span></div>
+    <div class="sheet-wrap">
+      <table class="sheet">
+        <thead><tr><th class="rowno"></th><th>Setting</th><th>Value</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="rowno">2</td><td>Project</td><td><b>Project Falcon</b></td><td>Titelfolie und Dateiname</td></tr>
+          <tr><td class="rowno">3</td><td>Customer</td><td><b>ACME Automotive</b></td><td>Titelfolie</td></tr>
+          <tr><td class="rowno">4</td><td>Report date</td><td></td><td>leer = heute</td></tr>
+          <tr><td class="rowno">5</td><td>Orange threshold (pp)</td><td>10</td><td>ab wie viel Rückstand orange</td></tr>
+          <tr><td class="rowno">6</td><td>Red threshold (pp)</td><td>25</td><td>ab wie viel Rückstand rot</td></tr>
+          <tr><td class="rowno">…</td><td>…</td><td>…</td><td>…</td></tr>
+          <tr><td class="rowno">12</td><td>Template file</td><td></td><td>Kundenvorlage, siehe <a href="#vorlage">Teil 6</a></td></tr>
+          <tr><td class="rowno">15</td><td>Footer text</td><td></td><td>Fußzeile, z. B. „ACME confidential“</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sheet-caption col">Alle anderen Einstellungen haben sinnvolle Vorgaben, die Spalte Description erklärt jede davon.</p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="part" id="woche">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 2 · jede Woche, ein paar Minuten</div>
+    <h2>Jede Woche</h2>
+  </div>
+
+  <div class="step col">
+    <div class="num">4</div>
+    <div class="body">
+      <h3>Aufgaben pflegen</h3>
+      <p>Im Blatt <b>Tasks</b> steht pro Arbeitspaket eine Zeile. Die Spalten mit Stern sind Pflicht, Start und Due braucht die Ampel. Alles andere ist optional.</p>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="tabs" aria-hidden="true"><span>Read me</span><span class="on">Tasks</span><span>Import</span><span>Mapping</span><span>Settings</span></div>
+    <div class="sheet-wrap">
+      <table class="sheet">
+        <thead><tr>
+          <th class="rowno"></th><th class="req">ID</th><th class="req">Title</th><th class="req">Version</th><th>Owner</th><th>Start</th><th>Due</th>
+          <th>Estimate (h)</th><th>Spent (h)</th><th>Progress (%)</th><th>State</th><th>Light override</th><th>Comment</th>
+        </tr></thead>
+        <tbody>
+          <tr class="example"><td class="rowno">2</td><td>#EXAMPLE-1</td><td>Login dialog (example row …)</td><td>1.2.0</td><td>Anna</td><td>2026-11-02</td><td>2026-11-27</td><td>3d</td><td>10</td><td></td><td>in progress</td><td></td><td>waiting for API</td></tr>
+          <tr><td class="rowno">3</td><td>PRJ-201</td><td>Login dialog with single sign-on</td><td>1.2.0</td><td>Anna</td><td>2026-10-19</td><td>2026-11-27</td><td>80</td><td>44</td><td></td><td>In Progress</td><td></td><td></td></tr>
+          <tr><td class="rowno">4</td><td>PRJ-202</td><td>CAN bus driver for the new ECU generation</td><td>1.2.0</td><td>Ben</td><td>2026-10-01</td><td>2026-11-13</td><td>120</td><td>92</td><td></td><td>In Progress</td><td></td><td>HW sample arrived late</td></tr>
+          <tr><td class="rowno">5</td><td>PRJ-206</td><td>Unit tests for the CRC module</td><td>1.2.0</td><td>Fay</td><td>2026-10-05</td><td>2026-11-20</td><td>40</td><td>40</td><td>100</td><td>Done</td><td></td><td></td></tr>
+          <tr><td class="rowno">6</td><td>PRJ-210</td><td>Error memory and freeze frames</td><td>1.2.0</td><td>Jana</td><td>2026-10-26</td><td>2026-12-18</td><td>60</td><td>8</td><td></td><td>In Progress</td><td>Orange</td><td>waits for spec v2.1</td></tr>
+          <tr><td class="rowno">7</td><td>PRJ-301</td><td>Architecture concept 2.0</td><td>2.0.0</td><td>Anna</td><td>2026-10-12</td><td>2026-12-18</td><td>120</td><td>40</td><td></td><td>In Progress</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col stack">
+    <ul class="tight">
+      <li><b>Fortschritt</b> kommt aus Spent ÷ Estimate. Ein Wert in <i>Progress (%)</i> hat Vorrang, und der State <i>Done</i> zählt als 100 %.</li>
+      <li><b>Dauer</b> geht als Stunden (<code>40</code>) oder als <code>2d 4h</code> (1 Tag = 8 h, 1 Woche = 5 Tage).</li>
+      <li><b>Start leer?</b> Dann rechnet das Tool Due minus Aufwand in Arbeitstagen.</li>
+      <li><b>Zeile vorübergehend ausblenden:</b> ein <code>#</code> vor die ID, wie bei der Beispielzeile.</li>
+      <li><b>Owner und Due</b> erscheinen nie auf den Kundenfolien.</li>
+    </ul>
+    <p class="note">Du arbeitest mit Polarion? Dann musst du die Tasks nicht abtippen, sondern fügst den Export ins Blatt <b>Import</b> ein, siehe <a href="#polarion">Teil 5</a>.</p>
+  </div>
+
+  <div class="step col">
+    <div class="num">5</div>
+    <div class="body">
+      <h3>Deck erzeugen</h3>
+      <p>Speichere die Excel und <b>schließe sie</b>, denn ungespeicherte Änderungen sieht das Tool nicht. Dann ziehst du die Datei im Explorer mit der Maus auf <code>make_report.cmd</code>. Es öffnet sich ein Fenster:</p>
+    </div>
+  </div>
+  <pre class="term" aria-label="Beispielausgabe"><span class="dim">Project:      </span>Project Falcon / ACME Automotive
+<span class="dim">Report date:  </span>2026-11-10 (CW 46/2026)
+<span class="dim">Source:       </span>Tasks sheet
+<span class="dim">Tasks:        </span>22 in 3 version(s)
+<span class="dim">Thresholds:   </span>orange &gt; 10 pp, red &gt; 25 pp behind
+<span class="dim">History:      </span>6 snapshot(s), previous week 2026-W45 (2026-11-03); trend CW 40 .. CW 46 (7 week(s))
+
+  Version 1.2.0         <mark>53 % (46 %)</mark>  <span class="g">GREEN</span>    15 task(s): 1 red, 4 orange, 9 green, 1 grey
+  Version 2.0.0         23 % (20 %)  <span class="o">ORANGE</span>    4 task(s): 1 red, 1 green, 2 grey
+  Version 1.1.0        100 % (88 %)  <span class="g">GREEN</span>     3 task(s): 3 green
+
+0 error(s), 2 warning(s):
+  <span class="o">warning</span> Tasks row 9: PRJ-205: no progress (no Progress %, no done state, no Spent/Estimate); not counted in version 1.2.0
+  <span class="o">warning</span> Tasks row 22: PRJ-303: no progress (no Progress %, no done state, no Spent/Estimate); not counted in version 2.0.0
+
+Deck written: C:\Kunden\Falcon\<mark>Project Falcon Status 2026-W46.pptx</mark> (6 slides)
+Snapshot saved: C:\Kunden\Falcon\history\2026-W46.json
+
+<span class="g">Done.</span>
+Drücken Sie eine beliebige Taste . . .</pre>
+  <div class="col stack">
+    <dl class="read">
+      <dt>53 % (46 %)</dt><dd>Stand der Version jetzt, in Klammern der Stand der Vorwoche.</dd>
+      <dt>error / warning</dt><dd>Mit Zeilennummer. Eine Zeile mit <i>error</i> fehlt im Deck, bis du sie korrigierst. Ein <i>warning</i> ist nur ein Hinweis.</dd>
+      <dt>Deck written</dt><dd>Das Deck liegt neben deiner Excel. Ein vorhandenes wird nie überschrieben, das neue heißt dann <code>… (2).pptx</code>.</dd>
+      <dt>Snapshot saved</dt><dd>Die Werte dieser Woche sind im Ordner <code>history</code> gespeichert. Daraus kommen nächste Woche die Klammerwerte.</dd>
+    </dl>
+    <p class="note warn"><b>Den Ordner <code>history</code> nicht löschen.</b> Er ist das Gedächtnis des Tools. Ohne ihn fangen die Vorwochenwerte und das Trenddiagramm von vorn an. Ein zweiter Lauf in derselben Woche ersetzt nur die Werte dieser Woche.</p>
+  </div>
+
+  <div class="step col">
+    <div class="num">6</div>
+    <div class="body">
+      <h3>Deck prüfen und präsentieren</h3>
+      <p>Öffne das Deck in PowerPoint und schau kurz drüber. Was du auf den Folien siehst, erklärt der nächste Teil. Anpassen kannst du es wie jedes andere Deck. Dein nächster Lauf erzeugt aber eine neue Datei, Änderungen von Hand wandern also nicht mit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="part" id="lesen">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 3</div>
+    <h2>Die Folien lesen</h2>
+    <p class="col">Das Deck hat immer denselben Aufbau: Titelfolie, Trend, dann pro Softwareversion eine Tabelle. Wird eine Tabelle zu lang, geht sie auf einer Folgefolie weiter, zum Beispiel „Version 1.2.0 (1/2)“ und „(2/2)“.</p>
+  </div>
+
+  <div class="grid2">
+    <figure class="slide"><img src="img/title.png" alt="Titelfolie: Project Falcon, Status report, ACME Automotive, CW 46 / 2026, 10 Nov 2026"><figcaption>Titelfolie mit Projekt, Kunde, Kalenderwoche und Datum.</figcaption></figure>
+    <figure class="slide"><img src="img/trend.png" alt="Liniendiagramm Progress over time, eine Linie pro Version von CW 40 bis CW 46"><figcaption>Fortschritt pro Version über die letzten Wochen. Das Diagramm ist in PowerPoint editierbar (Daten bearbeiten).</figcaption></figure>
+  </div>
+
+  <figure class="slide"><img src="img/table.png" alt="Tabelle Version 1.2.0 mit ID, Task, Progress (prev. week), Status und Comment"><figcaption>Eine Versionstabelle. So liest du die Spalten:</figcaption></figure>
+  <div class="col">
+    <dl class="read">
+      <dt><span class="big">55 %</span> <span class="small">(48 %)</span></dt><dd>Fortschritt jetzt, fett. In Klammern der Wert der Vorwoche.</dd>
+      <dt><span class="dot red"></span> <span class="small">(<span class="dot orange" style="width:.6em;height:.6em"></span>)</span></dt><dd>Die Ampel jetzt. Die kleine Ampel in Klammern erscheint nur, wenn sie sich seit letzter Woche geändert hat, hier von orange auf rot.</dd>
+      <dt>– (–)</dt><dd>Kein Fortschritt bekannt: weder %, noch Done, noch Stunden. Dazu gibt es eine graue Ampel.</dd>
+      <dt>(new)</dt><dd>Die Aufgabe war letzte Woche noch nicht im Bericht.</dd>
+      <dt>Version total</dt><dd>Die Summenzeile der Version. Sie wird auf jeder Folgefolie wiederholt.</dd>
+      <dt>Legende</dt><dd>Unten auf jeder Tabellenfolie stehen die Bedeutung der Farben und deine Schwellwerte.</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="part" id="ampel">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 4</div>
+    <h2>Wie die Ampel entsteht</h2>
+    <p class="col">Die Ampel vergleicht, wie weit eine Aufgabe <i>ist</i>, mit dem, wie weit sie nach Plan <i>sein sollte</i>. Der Soll-Wert ist der Anteil der Zeit von Start bis Due, der am Stichtag schon vergangen ist. Probier es aus:</p>
+  </div>
+
+  <div class="calc" id="calc">
+    <div class="mode" role="radiogroup" aria-label="Fortschritt angeben">
+      <label><input type="radio" name="mode" id="mode-pct" value="pct" checked> Fortschritt in %</label>
+      <label><input type="radio" name="mode" id="mode-hours" value="hours"> aus Stunden (Spent ÷ Estimate)</label>
+    </div>
+    <div class="calc-grid">
+      <div class="field"><label for="c-start">Start (leer = Due − Aufwand)</label><input type="date" id="c-start" value="2026-10-19"></div>
+      <div class="field"><label for="c-due">Due</label><input type="date" id="c-due" value="2026-11-27"></div>
+      <div class="field"><label for="c-on">Stichtag (Report date)</label><input type="date" id="c-on" value="2026-11-10"></div>
+      <div class="field" id="f-pct"><label for="c-pct">Fortschritt (%)</label><input type="number" id="c-pct" min="0" max="100" step="1" value="40"></div>
+      <div class="field" id="f-est" hidden><label for="c-est">Estimate (h)</label><input type="number" id="c-est" min="0" step="1" value="80"></div>
+      <div class="field" id="f-spent" hidden><label for="c-spent">Spent (h)</label><input type="number" id="c-spent" min="0" step="1" value="44"></div>
+      <div class="field"><label for="c-override">Light override</label>
+        <select id="c-override"><option value="">(leer)</option><option value="green">Green</option><option value="orange">Orange</option><option value="red">Red</option></select></div>
+      <div class="field"><label for="c-or">Orange ab (pp)</label><input type="number" id="c-or" min="0" step="1" value="10"></div>
+      <div class="field"><label for="c-rd">Rot ab (pp)</label><input type="number" id="c-rd" min="0" step="1" value="25"></div>
+    </div>
+    <div class="result" aria-live="polite">
+      <div class="lamp" id="lamp"></div>
+      <div class="stack" style="gap:.35rem">
+        <div class="verdict" id="verdict">–</div>
+        <div class="figures" id="figures"></div>
+        <div class="why" id="why"></div>
+      </div>
+    </div>
+    <ol class="rules" id="rules">
+      <li>Light override gesetzt → diese Farbe</li>
+      <li>Fortschritt 100 % → grün</li>
+      <li>Stichtag nach Due und nicht fertig → rot</li>
+      <li>Due oder Fortschritt fehlt → grau (nicht bewertbar)</li>
+      <li>Rückstand = Soll − Ist: bis Orange-Schwelle grün, bis Rot-Schwelle orange, darüber rot</li>
+    </ol>
+  </div>
+
+  <div class="col stack">
+    <p><b>Die Version</b> bekommt den Durchschnitt ihrer Aufgaben, gewichtet nach geschätzten Stunden. Eine 80-h-Aufgabe zählt also doppelt so viel wie eine 40-h-Aufgabe. Fehlt bei einer Aufgabe die Schätzung, wird einfach gemittelt. Die Versionsampel vergleicht diese gewichteten Summen. Deshalb kann eine Version grün sein, obwohl einzelne Aufgaben orange sind.</p>
+    <p class="note">Rechnet die Ampel anders, als du es erwartest? Dann ziehe die Excel mit <code>--check</code> auf das Tool, siehe <a href="#spickzettel">Spickzettel</a>. Das Tool listet dann jede Aufgabe mit Ist, Soll und Ampel auf und schreibt nichts.</p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="part" id="polarion">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 5 · optional</div>
+    <h2>Mit einem Polarion-Export arbeiten</h2>
+  </div>
+  <div class="col stack">
+    <ul class="tight">
+      <li>Exportiere die Work Items in Polarion nach <b>Excel (.xlsx)</b>, mit ID, Titel, Version (Planned In), am besten auch Due Date, Initial Estimate, Time Spent und Status.</li>
+      <li>Kopiere die ganze Tabelle samt Kopfzeile ins Blatt <b>Import</b>.</li>
+      <li>Prüfe einmalig im Blatt <b>Mapping</b>, dass die Spaltennamen zu deinem Export passen. Vorbelegt sind die üblichen Polarion-Namen.</li>
+      <li>Im Blatt <b>Tasks</b> ergänzt du nur noch, was Polarion nicht hat, also Kommentar, Override oder einen festen %-Wert. Dazu trägst du dieselbe ID ein und lässt die übrigen Spalten leer. Ein gefülltes Feld in Tasks gewinnt.</li>
+    </ul>
+    <p class="note">Eine leere Time-Spent-Zelle im Export zählt als 0 h. Weil Polarion kein Startdatum hat, rechnet das Tool den Start aus Due minus Aufwand. Alte <code>.xls</code>-Exporte vorher in Excel als <code>.xlsx</code> speichern.</p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="part" id="vorlage">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 6 · sobald du sie hast</div>
+    <h2>Die PowerPoint-Vorlage des Kunden</h2>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <ul class="tight">
+        <li>Lege die Vorlage (<code>.pptx</code> oder <code>.potx</code>) neben deine Excel.</li>
+        <li>Trage ihren Dateinamen in Settings unter <b>Template file</b> ein.</li>
+        <li>Starte wie gewohnt. Farben, Schriften, Master und Foliennummern kommen aus der Vorlage, Folien aus der Vorlage werden nicht übernommen.</li>
+        <li>Erscheint die Meldung <code>layout "Title Only" not found, using …</code>, hat das Tool selbst ein passendes Layout gewählt. Willst du ein anderes, kopiere einen Namen aus der Meldung nach <b>Title layout</b> bzw. <b>Content layout</b>.</li>
+        <li>Optional: <b>Footer text</b>, zum Beispiel „ACME confidential“.</li>
+      </ul>
+      <p class="sheet-caption">Die Tabelle passt sich der freien Fläche der Vorlage an. Ist dort weniger Platz, kommen weniger Zeilen auf eine Folie, die Schrift wird etwas kleiner, und lange Texte werden gekürzt.</p>
+    </div>
+    <figure class="slide"><img src="img/template.png" alt="Dieselbe Versionstabelle in einer Vorlage mit violettem Titelbalken"><figcaption>Dieselben Daten in einer fremden Vorlage, ganz ohne Anpassung.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="part" id="probleme">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 7</div>
+    <h2>Wenn etwas hakt</h2>
+  </div>
+  <div class="col">
+    <details><summary>„… is not a date“ oder ein anderer error mit Zeilennummer</summary>
+      <div><p>Die genannte Zelle korrigieren und neu starten. Bis dahin fehlt diese Zeile im Deck, alle anderen sind drin. Das Fenster endet dann mit „Done – but some rows had errors“.</p></div></details>
+    <details><summary>„duplicate ID … row skipped“</summary>
+      <div><p>Dieselbe ID steht zweimal im Blatt. Verwendet wird die erste Zeile, die zweite musst du umbenennen oder löschen.</p></div></details>
+    <details><summary>Eine Aufgabe zeigt „–“ und eine graue Ampel</summary>
+      <div><p>Es fehlt der Fortschritt (kein %, kein Done, keine Stunden) oder das Due-Datum. Das Fenster nennt die Aufgabe als warning.</p></div></details>
+    <details><summary>„cannot write … is it open in PowerPoint?“</summary>
+      <div><p>Das Deck ist noch in PowerPoint geöffnet. Schließen und noch einmal starten.</p></div></details>
+    <details><summary>„sheet "Tasks" is missing“</summary>
+      <div><p>Du hast eine falsche Excel auf das Tool gezogen. Nimm deine Eingabe-Excel, die auf der Vorlage <code>Tasks.xlsx</code> beruht.</p></div></details>
+    <details><summary>„mapped column(s) … not found“ beim Polarion-Import</summary>
+      <div><p>Ein Name im Blatt Mapping kommt im Export nicht vor. Die Meldung listet die Spalten, die der Export wirklich hat. Korrigiere den Namen in Mapping oder lösche ihn.</p></div></details>
+    <details><summary>Die Klammerwerte fehlen oder sind falsch</summary>
+      <div><p>Klammerwerte gibt es erst ab der zweiten Woche, dann aus dem Ordner <code>history</code> neben der Excel. Ist er gelöscht oder liegt die Excel woanders, fängt die Historie neu an. Für einen Bericht zu einem früheren Datum gibt es <code>--date</code>.</p></div></details>
+    <details><summary>„Python 3 was not found“</summary>
+      <div><p>Python fehlt auf dem Rechner, siehe Schritt 2.</p></div></details>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="part" id="spickzettel">
+  <div class="part-head col">
+    <div class="eyebrow">Teil 8</div>
+    <h2>Spickzettel</h2>
+    <p class="col">Für Sonderfälle startest du das Tool in der Eingabeaufforderung, aus dem Ordner mit <code>statusreport.pyz</code>. Hinter den Dateinamen hängst du die Option an:</p>
+  </div>
+  <div class="col stack">
+    <div class="cmd"><code>py statusreport.pyz "C:\Kunden\Falcon\Tasks.xlsx" --check</code><button type="button" data-copy='py statusreport.pyz "C:\Kunden\Falcon\Tasks.xlsx" --check'>Kopieren</button></div>
+    <table class="cheat">
+      <tr><td>--check</td><td>Nur prüfen und rechnen, jede Aufgabe auflisten, nichts schreiben</td></tr>
+      <tr><td>--no-save</td><td>Probelauf: Deck ja, aber die Woche wird nicht in <code>history</code> gespeichert</td></tr>
+      <tr><td>-v</td><td>Normaler Lauf mit der Liste aller Aufgaben</td></tr>
+      <tr><td>--date 2026-11-06</td><td>Bericht für ein anderes Datum</td></tr>
+      <tr><td>--polarion export.xlsx</td><td>Polarion-Export als eigene Datei statt im Blatt Import</td></tr>
+      <tr><td>--template kunde.pptx</td><td>Vorlage für diesen Lauf, statt der aus Settings</td></tr>
+      <tr><td>--force</td><td>Vorhandenes Deck überschreiben statt „(2)“ anzuhängen</td></tr>
+      <tr><td>--init neu.xlsx</td><td>Eine neue, leere Eingabe-Excel anlegen</td></tr>
+    </table>
+    <p class="sheet-caption">Das Fenster endet mit „Done.“ (alles gut), „Done – but some rows had errors“ (Deck da, einzelne Zeilen fehlen) oder „Nothing was written“ (nichts geschrieben, die Meldung darüber sagt, warum).</p>
+  </div>
+</section>
+
+<footer class="col">SW Status Report 0.9.0 · Das Tool liest deine Excel nur und verändert sie nie.</footer>
+</div>
+
+<script>
+(function () {
+  // copy buttons
+  document.querySelectorAll("button[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = btn.getAttribute("data-copy");
+      var done = function () { btn.textContent = "Kopiert"; setTimeout(function () { btn.textContent = "Kopieren"; }, 1500); };
+      var select = function () {
+        var code = btn.parentElement.querySelector("code");
+        var range = document.createRange(); range.selectNodeContents(code);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        btn.textContent = "Markiert: Strg+C";
+      };
+      try {
+        navigator.clipboard.writeText(text).then(done, select);
+      } catch (e) { select(); }
+    });
+  });
+
+  // traffic light calculator: same rules as statusreport/calc.py (R-CA-1 ... R-CA-3, R-CA-6)
+  var $ = function (id) { return document.getElementById(id); };
+  var COLORS = { green: "var(--green)", orange: "var(--orange)", red: "var(--red)", grey: "var(--grey)" };
+  var NAMES = { green: "Grün", orange: "Orange", red: "Rot", grey: "Grau" };
+  function parse(v) { if (!v) return null; var p = v.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function days(a, b) { return Math.round((b - a) / 86400000); }
+  function fmtDate(t) { var d = new Date(t); return ("0" + d.getUTCDate()).slice(-2) + "." + ("0" + (d.getUTCMonth() + 1)).slice(-2) + "." + d.getUTCFullYear(); }
+  function num(id) { var v = $(id).value; return v === "" ? null : Number(v); }
+  function deriveStart(due, est) {
+    if (due === null || !est || est <= 0) return null;
+    var n = Math.max(1, Math.ceil(est / 8 - 1e-9)), d = new Date(due), c = 0;
+    for (;;) { var wd = d.getUTCDay(); if (wd !== 0 && wd !== 6) { c++; if (c === n) return d.getTime(); } d.setUTCDate(d.getUTCDate() - 1); }
+  }
+  function update() {
+    var hours = $("mode-hours").checked;
+    $("f-pct").hidden = hours; $("f-est").hidden = !hours; $("f-spent").hidden = !hours;
+    var start = parse($("c-start").value), due = parse($("c-due").value), on = parse($("c-on").value);
+    var orange = num("c-or") || 0, red = num("c-rd") || 0, override = $("c-override").value;
+    var est = num("c-est"), spent = num("c-spent"), progress = null, note = "";
+    if (hours) {
+      if (est && est > 0 && spent !== null) { progress = Math.min(spent / est * 100, 99); if (spent >= est) note = " (höchstens 99 %, bis die Aufgabe Done ist)"; }
+    } else { progress = num("c-pct"); if (progress !== null) progress = Math.max(0, Math.min(100, progress)); }
+    var derived = false;
+    if (start === null) { start = deriveStart(due, hours ? est : null); derived = start !== null; }
+    var expected = null;
+    if (start !== null && due !== null && on !== null && start <= due) {
+      expected = due === start ? (on < start ? 0 : 100) : Math.max(0, Math.min(100, days(start, on) / days(start, due) * 100));
+    }
+    var light, rule, why;
+    if (override) { light = override; rule = 1; why = "Die Farbe ist von Hand gesetzt."; }
+    else if (progress !== null && progress >= 100 - 1e-6) { light = "green"; rule = 2; why = "Fertig ist immer grün."; }
+    else if (due !== null && on !== null && on > due) { light = "red"; rule = 3; why = "Due (" + fmtDate(due) + ") ist vorbei, und die Aufgabe ist nicht fertig."; }
+    else if (progress === null || expected === null) { light = "grey"; rule = 4; why = progress === null ? "Es gibt keinen Fortschritt." : "Es fehlt ein Plan (Due, oder Start nach Due)."; }
+    else {
+      var gap = expected - progress; rule = 5;
+      if (gap <= orange + 1e-6) { light = "green"; why = gap <= 0 ? "Die Aufgabe ist im Plan oder voraus." : "Der Rückstand liegt innerhalb der Orange-Schwelle von " + orange + " pp."; }
+      else if (gap <= red + 1e-6) { light = "orange"; why = "Der Rückstand ist größer als " + orange + " pp, aber höchstens " + red + " pp."; }
+      else { light = "red"; why = "Der Rückstand ist größer als " + red + " pp."; }
+    }
+    $("lamp").style.background = COLORS[light];
+    $("verdict").textContent = NAMES[light];
+    var parts = [];
+    parts.push("Ist: " + (progress === null ? "–" : progress.toFixed(0) + " %" + note));
+    parts.push("Soll: " + (expected === null ? "–" : expected.toFixed(0) + " %"));
+    if (progress !== null && expected !== null) parts.push("Rückstand: " + Math.max(0, expected - progress).toFixed(0) + " pp");
+    if (derived) parts.push("Start abgeleitet: " + fmtDate(start));
+    $("figures").innerHTML = parts.map(function (p) { return "<span>" + p + "</span>"; }).join("");
+    $("why").textContent = "Regel " + rule + ": " + why;
+    Array.prototype.forEach.call($("rules").children, function (li, i) { li.className = i + 1 === rule ? "hit" : ""; });
+  }
+  ["c-start", "c-due", "c-on", "c-pct", "c-est", "c-spent", "c-override", "c-or", "c-rd", "mode-pct", "mode-hours"].forEach(function (id) {
+    $(id).addEventListener("input", update); $(id).addEventListener("change", update);
+  });
+  update();
+})();
+</script>

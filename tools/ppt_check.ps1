@@ -6,8 +6,10 @@
 # PowerPoint is only closed again if it was not running before.
 param(
     [Parameter(Mandatory = $true)][string]$Path,
-    [string]$PngDir
+    [string]$PngDir,
+    [int]$Width = 1600
 )
+$Height = [int]($Width * 9 / 16)
 $ErrorActionPreference = 'Stop'
 $full = (Resolve-Path $Path).Path
 $wasRunning = [bool](Get-Process POWERPNT -ErrorAction SilentlyContinue)
@@ -28,7 +30,7 @@ try {
         }
         if ($PngDir) {
             $dir = (New-Item -ItemType Directory -Force $PngDir).FullName
-            $s.Export((Join-Path $dir "slide$($s.SlideIndex).png"), "PNG", 1600, 900)
+            $s.Export((Join-Path $dir "slide$($s.SlideIndex).png"), "PNG", $Width, $Height)
         }
     }
     $pres.Close()

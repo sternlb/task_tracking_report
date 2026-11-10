@@ -6,7 +6,8 @@ Creates:
     dist/sw-status-report/statusreport.pyz   the whole tool in one file (stdlib zipapp)
     dist/sw-status-report/make_report.cmd    drag the input workbook onto it (Windows)
     dist/sw-status-report/Tasks.xlsx         an empty input workbook (same as --init)
-    dist/sw-status-report/README.md          the user guide
+    dist/sw-status-report/README.md          the user guide (English reference)
+    dist/sw-status-report/Tutorial (Deutsch).html   step-by-step tutorial, works offline
     dist/sw-status-report-<version>.zip      the folder above as one zip to hand over
 
 Runs with the standard library only; nothing is downloaded or installed.
@@ -26,6 +27,8 @@ sys.path.insert(0, ROOT)
 
 from statusreport import __version__  # noqa: E402
 from statusreport.template import template_bytes  # noqa: E402
+
+import build_tutorial  # noqa: E402  (tools/ is on sys.path when run as a script or from the tests)
 
 DIST = os.path.join(ROOT, "dist")
 NAME = "sw-status-report"
@@ -53,6 +56,7 @@ def main(dist: str = DIST) -> str:
     build_pyz(os.path.join(folder, "statusreport.pyz"))
     shutil.copy(os.path.join(ROOT, "make_report.cmd"), folder)
     shutil.copy(os.path.join(ROOT, "README.md"), folder)
+    build_tutorial.build(os.path.join(folder, "Tutorial (Deutsch).html"))
     with open(os.path.join(folder, "Tasks.xlsx"), "wb") as fh:
         fh.write(template_bytes())
 

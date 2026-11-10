@@ -14,6 +14,10 @@ The deck can use your customer's PowerPoint template.
 
 Version 0.9.0 · English · runs with plain Python, nothing to install.
 
+**Tutorial in German:** `Tutorial (Deutsch).html` in the delivery folder is a
+step-by-step guide with real slides and a traffic-light calculator. Open it in any
+browser; it also works offline. Source: [docs/tutorial/tutorial.html](docs/tutorial/tutorial.html).
+
 ---
 
 ## 1. What you need
@@ -184,7 +188,8 @@ because unsaved changes are not seen.
 
 ```
 python -m unittest discover -s tests          # all tests
-python tools/build_pyz.py                     # dist/sw-status-report/ and the zip
+python tools/build_pyz.py                     # dist/sw-status-report/ and the zip (incl. the tutorial)
+python tools/build_tutorial.py                # only the tutorial, images embedded
 python tools/make_demo.py out/demo            # demo input with 6 weeks of history
 python -m statusreport out/demo/Tasks.xlsx    # demo deck
 python tools/opc_lint.py <file.pptx>          # structural check

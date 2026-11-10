@@ -97,7 +97,15 @@ class DeliveryTest(unittest.TestCase):
         )
 
     def test_contents(self):
-        self.assertEqual(sorted(os.listdir(self.folder)), ["README.md", "Tasks.xlsx", "make_report.cmd", "statusreport.pyz"])
+        self.assertEqual(
+            sorted(os.listdir(self.folder)),
+            ["README.md", "Tasks.xlsx", "Tutorial (Deutsch).html", "make_report.cmd", "statusreport.pyz"],
+        )
+        with open(os.path.join(self.folder, "Tutorial (Deutsch).html"), encoding="utf-8") as fh:
+            tutorial = fh.read()
+        self.assertTrue(tutorial.startswith("<!doctype html>"))
+        self.assertNotIn('src="img/', tutorial)  # images embedded, works offline
+        self.assertEqual(tutorial.count("data:image/png;base64,"), 4)
         with zipfile.ZipFile(self.pyz) as zf:
             names = zf.namelist()
         self.assertIn("__main__.py", names)

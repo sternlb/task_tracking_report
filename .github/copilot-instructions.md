@@ -67,7 +67,9 @@ tools/
   make_fixtures.ps1  dev only: creates tests/fixtures/*.xlsx with real Excel
   make_demo.py       demo input + 6 weeks of history (python tools/make_demo.py out/demo)
   make_templates.ps1 dev only: foreign test templates (German names, .potx, 4:3) with real PowerPoint
-  build_pyz.py       delivery: dist/sw-status-report/ (statusreport.pyz, make_report.cmd, Tasks.xlsx, README) + zip
+  build_pyz.py       delivery: dist/sw-status-report/ (statusreport.pyz, make_report.cmd, Tasks.xlsx, README, tutorial) + zip
+  build_tutorial.py  docs/tutorial/tutorial.html + img/ -> one self-contained HTML (images as data URIs)
+docs/tutorial/       German step-by-step tutorial; keep it in line with the tool when behaviour or texts change
 make_report.cmd      Windows launcher shipped with the .pyz (drag the workbook onto it)
 tests/               unittest only; fixtures/ holds files saved by real Excel (do not regenerate casually)
 docs/                requirements.md, design.md, tasks.md
