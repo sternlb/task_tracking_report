@@ -39,12 +39,31 @@ Lessons:
 
 ## M2 — Excel in (R-IN-*)
 
-- [ ] T-2.1 `xlsx_read.py` incl. shared strings, inline strings, dates, 1904, empty cells
-- [ ] T-2.2 `xlsx_write.py` (styles, column widths, frozen header, drop-down validation)
-- [ ] T-2.3 `--init`: input template with Settings, Tasks, Import, Mapping and an example row (R-IN-1…5)
-- [ ] T-2.4 `parse.py`: dates, durations, percent, lights, natural sort (R-IN-6, R-IN-8)
-- [ ] T-2.5 `loader.py`: settings, mapping, merge by ID, validation and issues (R-IN-7, R-OP-3)
-- [ ] T-2.6 Fixtures: template filled in Excel, Polarion export, broken files
+- [x] T-2.1 `xlsx_read.py` incl. shared strings, inline strings, dates, 1904, empty cells
+- [x] T-2.2 `xlsx_write.py` (styles, column widths, frozen header, drop-down validation)
+- [x] T-2.3 `--init`: input template with Settings, Tasks, Import, Mapping and an example row (R-IN-1…5)
+- [x] T-2.4 `parse.py`: dates, durations, percent, lights, natural sort (R-IN-6, R-IN-8)
+- [x] T-2.5 `loader.py`: settings, mapping, merge by ID, validation and issues (R-IN-7, R-OP-3)
+- [x] T-2.6 Fixtures: template filled in Excel, Polarion export, broken files
+      (`tools/make_fixtures.ps1`; the Polarion export is **synthetic** until OP-1 delivers a real one)
+- [ ] T-2.7 Check the mapping against a real Polarion export (OP-1)
+
+**M2 result (2026-11-10):**
+- `python -m statusreport --init X.xlsx` creates the input workbook. It opens in Excel
+  without a repair prompt, and the drop-down and the frozen header survive Excel's
+  open/save round trip.
+- `python -m statusreport X.xlsx --check [--polarion export.xlsx] [--date …]` reads and
+  validates the input and lists errors and warnings with sheet and row. Exit codes:
+  0 OK, 1 row errors, 2 not usable.
+- Fixtures saved by real Excel cover shared strings, Excel styles, dates as date cells
+  and as text, a percent cell, the 1904 date system and an old `.xls` (rejected with a
+  hint). 43 tests pass on Python 3.11 and 3.13.
+
+Lessons:
+- Excel is strict, unlike PowerPoint: a repair prompt there would have been visible.
+  None appeared.
+- Added on the way: R-IN-9 (`#` rows ignored), R-IN-10 (header row detection in exports),
+  `--check` (R-OP-1).
 
 ## M3 — Calculation (R-CA-*)
 

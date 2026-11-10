@@ -43,6 +43,7 @@ sw-status-report/
 │   ├── xlsx_write.py      minimal .xlsx writer (template, chart workbook)
 │   ├── parse.py           dates, durations ("1d 4h"), percent, lights, natural sort
 │   ├── loader.py          Settings, Mapping, Import, Tasks → Task list + Issues
+│   ├── template.py        the empty input workbook for --init
 │   ├── calc.py            progress, expected, lights, version aggregation
 │   ├── history.py         load/save snapshots, previous week, trend series
 │   ├── report.py          builds the presentation-neutral report model
@@ -114,7 +115,15 @@ Lights are the strings `green`, `orange`, `red`, `grey`.
 4. Read `Tasks` by its fixed headers.
 5. Merge by ID (R-IN-7): start with the import rows, then let non-empty `Tasks` cells
    win; `Tasks` IDs that are not in the import are added.
-6. Validate and parse each row (`parse.py`) → `Task` or `Issue`.
+6. Validate and parse each row (`parse.py`) → `Task` or `Issue`. All errors of a row are
+   reported together, then the row is skipped. Issues are sorted by sheet and row.
+
+Template (`template.py`): sheets `Read me` (short user guide, opens first), `Tasks`
+(styled header, frozen first row, ID and Version formatted as text, Start/Due as dates,
+drop-down for `Light override`, example row `#EXAMPLE-1`), `Import` (empty), `Mapping`
+(typical Polarion names: ID, Title, Planned In, Assignee, Due Date, Initial Estimate,
+Time Spent, Status; Start is empty because Polarion has no standard start field) and
+`Settings` (value plus a description per setting).
 
 ### 5.3 Parsing rules (`parse.py`)
 

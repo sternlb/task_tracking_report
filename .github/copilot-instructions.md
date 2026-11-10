@@ -37,8 +37,16 @@ red or grey traffic light that says whether the task is on schedule.
 
 ```
 statusreport/
+  __main__.py        CLI: --init, --check (deck generation follows in M5)
+  model.py           dataclasses Settings, Task, Issue, LoadResult
+  labels.py          all user-visible texts: sheet names, column headers, help texts
+  defaults.py        setting definitions and default Polarion column names
+  parse.py           cell parsers: date, hours ("1w 2d 4h"), percent, light, text, natural_key
+  xlsx_read.py       minimal .xlsx reader -> rows of Python values (Percent, date, str, float)
+  loader.py          input workbook -> tasks + issues (settings, mapping, import merge by ID)
+  template.py        the empty input workbook for --init
   xmlutil.py         namespaces, XML escaping, XML declaration
-  xlsx_write.py      minimal .xlsx writer (chart workbook now, input template in M2)
+  xlsx_write.py      minimal .xlsx writer: styles, widths, frozen header, drop-downs
   pptx/
     opc.py           zip package: parts, relationships (.rels), [Content_Types].xml
     lint.py          structural self-check of a package (run before every save)
@@ -51,13 +59,25 @@ tools/
   spike.py           M1 sample deck with every XML construct the real slides need
   opc_lint.py        CLI around pptx/lint.py
   ppt_check.ps1      dev only: opens a deck in installed PowerPoint, exports PNGs
-tests/               unittest only
+  make_fixtures.ps1  dev only: creates tests/fixtures/*.xlsx with real Excel
+tests/               unittest only; fixtures/ holds files saved by real Excel (do not regenerate casually)
 docs/                requirements.md, design.md, tasks.md
 ```
 
-Planned modules (see design section 3): `parse.py`, `loader.py`, `calc.py`,
-`history.py`, `report.py`, `__main__.py`, `labels.py`, `defaults.py`, `model.py`,
-`xlsx_read.py`.
+Planned modules (see design section 3): `calc.py` (M3), `history.py` (M4), `report.py`
+and the slide builders (M5).
+
+### Input handling in short
+
+- The loader never raises for problems in a single row. It records an `Issue`
+  (`error` = row skipped, `warning` = kept) with sheet and Excel row number. Only
+  structural problems (missing sheet or mapped column) raise `InputError`, and unreadable
+  files raise `XlsxError`.
+- Parsers in `parse.py` raise `ValueError` with a message written for the end user.
+- A filled `Tasks` cell wins over the Polarion import for the same ID (R-IN-7). Rows with
+  an ID starting with `#` are ignored (R-IN-9).
+- Plain numbers in Progress are percentage points (65 = 65 %). Only cells with a
+  percent format arrive as `Percent(0.65)`.
 
 ### Key ideas
 
@@ -92,6 +112,8 @@ Planned modules (see design section 3): `parse.py`, `loader.py`, `calc.py`,
 ## Workflow
 
 - Run the tests: `python -m unittest discover -s tests`
+- Create an input workbook: `python -m statusreport --init out/Tasks.xlsx`
+- Validate an input: `python -m statusreport tests/fixtures/excel_with_import.xlsx --check`
 - After changing the base design: `python tools/build_base_pptx.py`
 - Sample deck: `python tools/spike.py`, then `python tools/opc_lint.py out/spike.pptx`
 - When finishing a task from `docs/tasks.md`, tick its checkbox in the same commit.

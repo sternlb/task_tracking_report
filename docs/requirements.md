@@ -77,6 +77,11 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   the import are added as additional tasks.
 - **R-IN-8 (M)** Dates shall be read as Excel date cells and as text in the formats
   `YYYY-MM-DD`, `DD.MM.YYYY` and `DD/MM/YYYY`.
+- **R-IN-9 (M)** Rows whose ID starts with `#` shall be ignored. The example row of the
+  template uses this (`#EXAMPLE-1`), and the user can switch off a task temporarily
+  (added in M2).
+- **R-IN-10 (S)** A Polarion export may have title rows above its header. The header row
+  is the first of the first 20 rows that contains the column mapped to ID (added in M2).
 
 ### 4.2 Calculation
 
@@ -148,7 +153,9 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 ### 4.5 Operation
 
 - **R-OP-1 (M)** Command line: `python statusreport.pyz <input.xlsx> [options]`
-  (`--init`, `--template`, `--polarion`, `--date`, `--out`, `--no-save`, `--force`).
+  (`--init`, `--template`, `--polarion`, `--date`, `--out`, `--no-save`, `--force`,
+  `--check`). `--check` only reads and validates the input and lists all problems, without
+  writing anything (added in M2).
 - **R-OP-2 (S)** Windows convenience: dragging the Excel onto `make_report.cmd` creates
   the deck.
 - **R-OP-3 (M)** Data problems (missing ID, duplicate ID, date that cannot be read,
