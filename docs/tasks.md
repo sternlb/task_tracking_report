@@ -72,7 +72,7 @@ Lessons:
 - [x] T-3.3 Version aggregation and version light (R-CA-4, R-CA-5)
 - [x] T-3.4 Table-driven tests for all rules
 - [x] T-3.5 OP-5 decided and built: empty Start = Due − estimate in working days (R-CA-6)
-- [ ] T-3.6 Decide OP-6 (empty Polarion `Time Spent` = 0 h?)
+- [x] T-3.6 OP-6 decided and built: empty imported Time Spent = 0 h (R-IN-11)
 
 **M3 result (2026-11-10):**
 - `calc.py` implements R-CA-1 … R-CA-5, and `--check` prints the computed values per

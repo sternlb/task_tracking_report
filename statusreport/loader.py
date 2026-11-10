@@ -160,7 +160,11 @@ def _read_import(wb: Workbook, sheet: str, source: str, mapping: Dict[str, str],
     for i, row in enumerate(rows[header_idx + 1:], start=header_idx + 2):
         if _row_is_empty(row):
             continue
-        records.append((i, {k: Raw(_cell(row, c), source, i) for k, c in cols.items()}))
+        rec = {k: Raw(_cell(row, c), source, i) for k, c in cols.items()}
+        # R-IN-11: in Polarion an empty Time Spent means nothing booked yet
+        if "spent_h" in rec and parse.is_empty(rec["spent_h"].value):
+            rec["spent_h"].value = 0.0
+        records.append((i, rec))
     return records
 
 

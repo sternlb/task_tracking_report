@@ -255,6 +255,9 @@ class FixtureTest(unittest.TestCase):
         self.assertEqual(tasks["PRJ-203"].start, D(2026, 12, 3))  # 2d ending Fri 4 Dec
         self.assertEqual(tasks["PRJ-203"].light, "green")  # not started yet by plan, 38 % done
         self.assertIsNone(tasks["PRJ-301"].start)  # no Due, no estimate
+        self.assertEqual((tasks["PRJ-202"].progress, tasks["PRJ-202"].light), (0, "green"))  # empty Time Spent = 0 h
+        self.assertEqual(versions[1].uncounted, 1)  # only PRJ-301 (Tasks-only, nothing known)
+        self.assertAlmostEqual(versions[1].progress, (0 * 4.5 + 6 / 16 * 100 * 16) / 20.5)
         self.assertEqual(versions[1].light, "green")
 
 

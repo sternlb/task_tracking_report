@@ -80,6 +80,9 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 - **R-IN-9 (M)** Rows whose ID starts with `#` shall be ignored. The example row of the
   template uses this (`#EXAMPLE-1`), and the user can switch off a task temporarily
   (added in M2).
+- **R-IN-11 (M)** When `Spent (h)` is mapped, an empty Time Spent cell in the import
+  counts as 0 h (in Polarion empty means nothing booked). A value in `Tasks` still wins,
+  and an empty Spent in a `Tasks`-only row stays unknown (decided 2026-11-10, resolves OP-6).
 - **R-IN-10 (S)** A Polarion export may have title rows above its header. The header row
   is the first of the first 20 rows that contains the column mapped to ID (added in M2).
 
@@ -203,5 +206,5 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
   the console?
 - ~~**OP-5**~~ Polarion has no standard start date. **Decided 2026-11-10:** fallback
   Start = Due − estimate in working days (R-CA-6). Mapping a custom field still works and wins.
-- **OP-6** In Polarion an empty `Time Spent` means "nothing booked" (0 h). Today an empty
-  Spent gives no progress value (R-CA-1.3). Treat empty as 0 for imported rows?
+- ~~**OP-6**~~ Empty Polarion `Time Spent`. **Decided 2026-11-10:** counts as 0 h for
+  imported rows (R-IN-11).

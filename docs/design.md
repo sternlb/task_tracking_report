@@ -113,6 +113,8 @@ Lights are the strings `green`, `orange`, `red`, `grey`.
 3. Apply `Mapping`: field → header text (case-insensitive, trimmed). A mapped header
    that is missing in the import is a structural error.
 4. Read `Tasks` by its fixed headers.
+   An empty mapped Time Spent becomes `0.0` already here (R-IN-11), so the merge below
+   lets a filled `Tasks` cell win as usual.
 5. Merge by ID (R-IN-7): start with the import rows, then let non-empty `Tasks` cells
    win; `Tasks` IDs that are not in the import are added.
 6. Validate and parse each row (`parse.py`) → `Task` or `Issue`. All errors of a row are

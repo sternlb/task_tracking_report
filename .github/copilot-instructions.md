@@ -77,6 +77,8 @@ builders (M5).
 - Parsers in `parse.py` raise `ValueError` with a message written for the end user.
 - A filled `Tasks` cell wins over the Polarion import for the same ID (R-IN-7). Rows with
   an ID starting with `#` are ignored (R-IN-9).
+- An empty mapped Time Spent in the import is read as `0.0` h (R-IN-11); in a
+  `Tasks`-only row an empty Spent stays `None` (unknown).
 - Plain numbers in Progress are percentage points (65 = 65 %). Only cells with a
   percent format arrive as `Percent(0.65)`.
 

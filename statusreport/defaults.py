@@ -56,6 +56,7 @@ MAPPING_NOTES: Dict[str, str] = {
     "version": "Often 'Planned In', 'Target Release' or a custom field.",
     "start": "Polarion has no standard start field. Empty = Start is derived from Due minus Estimate; "
     "or enter a custom field here, or fill Start in Tasks.",
+    "spent_h": "An empty cell in the export counts as 0 h (nothing booked yet).",
     "progress": "Usually empty: progress comes from hours or the state.",
     "light_override": "Usually maintained in Tasks, not in Polarion.",
     "comment": "Usually maintained in Tasks, not in Polarion.",

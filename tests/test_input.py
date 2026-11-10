@@ -224,7 +224,9 @@ class LoaderFixtureTest(unittest.TestCase):
         self.assertEqual(tasks["PRJ-201"].due, D(2026, 10, 30))
         self.assertEqual(tasks["PRJ-202"].estimate_h, 4.5)
         self.assertEqual(tasks["PRJ-202"].owner, "Hana")
+        self.assertEqual(tasks["PRJ-202"].spent_h, 0.0)  # empty Time Spent in the export (R-IN-11)
         self.assertEqual(tasks["PRJ-301"].source, "Tasks")
+        self.assertIsNone(tasks["PRJ-301"].spent_h)  # Tasks-only row: empty stays unknown
         self.assertEqual(r.errors, [])
 
     def test_import_sheet(self):
@@ -298,6 +300,25 @@ class LoaderUnitTest(TempFiles):
         path = self.workbook([], extra=[imp, mapping])
         with self.assertRaisesRegex(InputError, r'"release" \(Version\) not found.*"fix version"'):
             load(path)
+
+    def test_empty_imported_time_spent_is_zero(self):
+        """R-IN-11: only for imported rows with Time Spent mapped; a Tasks value still wins."""
+        mapping = Sheet(labels.SHEET_MAPPING, [
+            list(labels.MAPPING_HEADERS), ["ID", "Key"], ["Title", "Summary"], ["Version", "Release"], ["Spent (h)", "Time Spent"],
+        ])
+        imp = Sheet(labels.SHEET_IMPORT, [["Key", "Summary", "Release", "Time Spent"], ["X-1", "a", "1"], ["X-2", "b", "1"], ["X-3", "c", "1", "2h"]])
+        path = self.workbook([task_row(id="X-2", spent_h=5), task_row(id="M-1", title="manual", version="1")], extra=[imp, mapping])
+        tasks = {t.id: t for t in load(path).tasks}
+        self.assertEqual(tasks["X-1"].spent_h, 0.0)
+        self.assertEqual(tasks["X-2"].spent_h, 5.0)
+        self.assertEqual(tasks["X-3"].spent_h, 2.0)
+        self.assertIsNone(tasks["M-1"].spent_h)
+
+    def test_unmapped_time_spent_stays_unknown(self):
+        mapping = Sheet(labels.SHEET_MAPPING, [list(labels.MAPPING_HEADERS), ["ID", "Key"], ["Title", "Summary"], ["Version", "Release"]])
+        imp = Sheet(labels.SHEET_IMPORT, [["Key", "Summary", "Release"], ["X-1", "a", "1"]])
+        (t,) = load(self.workbook([], extra=[imp, mapping])).tasks
+        self.assertIsNone(t.spent_h)
 
     def test_import_header_below_title_rows(self):
         mapping = Sheet(labels.SHEET_MAPPING, [list(labels.MAPPING_HEADERS), ["ID", "Key"], ["Title", "Summary"], ["Version", "Release"]])
