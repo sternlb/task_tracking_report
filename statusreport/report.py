@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Sequence, Tuple
 
 from . import labels
+from .burndown import Burndown
 from .history import Snapshot
 from .model import Settings, VersionStatus
 
@@ -57,6 +58,8 @@ class Report:
     tables: List[VersionTable] = field(default_factory=list)
     orange_pp: float = 10.0
     red_pp: float = 25.0
+    burndown: Optional[Burndown] = None  # None = no task has an estimate, no burndown slide
+    burndown_note: str = ""
 
 
 def paginate(table: VersionTable, per_page: int) -> List[TablePage]:
@@ -119,6 +122,7 @@ def build_report(
     week: str,
     trend_labels: Sequence[str],
     trend_series: Sequence[Tuple[str, List[Optional[float]]]],
+    burndown: Optional[Burndown] = None,
 ) -> Report:
     day = settings.report_date or dt.date.today()
     iso = day.isocalendar()
@@ -141,6 +145,12 @@ def build_report(
     for vs in versions:
         total, rows = _version_rows(vs, prev)
         report.tables.append(VersionTable(vs.name, total, rows))
+    if burndown is not None:
+        report.burndown = burndown
+        note = labels.BURNDOWN_NOTE.format(remaining=burndown.remaining_h, total=burndown.total_h)
+        if burndown.end is not None and any(v is not None for v in burndown.ideal):
+            note += labels.BURNDOWN_NOTE_END.format(end=labels.format_date(burndown.end))
+        report.burndown_note = note
     return report
 
 

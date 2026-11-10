@@ -5,6 +5,8 @@ the customer meeting:
 
 - **Title slide** with project, customer, calendar week and date
 - **Progress over time**: one line per software version over the last weeks
+- **Burndown**: the remaining effort of all tasks in hours, week by week, with an ideal
+  line down to 0 h at the latest due date
 - **One table per software version**: every task with its progress in %, last week's
   value in brackets, e.g. **65 %** (50 %), and a traffic light that shows whether it is on
   schedule: ● green, ● orange, ● red, ● grey (not assessable)
@@ -12,7 +14,7 @@ the customer meeting:
 The task list is an Excel file you fill in by hand, or a Polarion export you paste in.
 The deck can use your customer's PowerPoint template.
 
-Version 0.9.0 · English · runs with plain Python, nothing to install.
+Version 0.9.1 · English · runs with plain Python, nothing to install.
 
 **Tutorial in German:** `Tutorial (Deutsch).html` in the delivery folder is a
 step-by-step guide with real slides and a traffic-light calculator. Open it in any
@@ -29,7 +31,7 @@ browser; it also works offline. Source: [docs/tutorial/tutorial.html](docs/tutor
 
 ## 2. Getting started
 
-1. Unzip `sw-status-report-0.9.0.zip` somewhere, e.g. `C:\Tools\sw-status-report`. It
+1. Unzip `sw-status-report-0.9.1.zip` somewhere, e.g. `C:\Tools\sw-status-report`. It
    contains `statusreport.pyz` (the tool), `make_report.cmd`, `Tasks.xlsx` (an empty
    input workbook) and this guide.
 2. Copy `Tasks.xlsx` into your project folder and open it. The sheet **Read me**
@@ -94,6 +96,9 @@ Dates can be Excel dates or text like `2026-11-27` or `27.11.2026`.
 - **Version total** = the average of its tasks weighted by estimated hours (a plain
   average if an estimate is missing). The version light compares the weighted totals,
   so a version can be green while single tasks are orange.
+- **Burndown** = the sum over all tasks with an estimate of estimate × (1 − progress):
+  a done task counts 0 h, a task not started its full estimate. Tasks without an
+  estimate are not included; without any estimate the slide is left out.
 
 ### Sheet "Settings"
 

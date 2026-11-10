@@ -171,7 +171,7 @@ footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
 
 <div class="wrap">
 <header class="top">
-  <div class="eyebrow">Tutorial · Version 0.9.0</div>
+  <div class="eyebrow">Tutorial · Version 0.9.1</div>
   <h1>SW Status Report Anleitung</h1>
   <p class="lead">Von der Aufgabenliste in Excel zum fertigen Status-Deck für den Kundentermin. Einmal einrichten, danach jede Woche drei Handgriffe.</p>
   <div class="flow" aria-label="Ablauf">
@@ -212,11 +212,12 @@ footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
     <div class="num">1</div>
     <div class="body">
       <h3>ZIP entpacken</h3>
-      <p>Entpacke <code>sw-status-report-0.9.0.zip</code> an einen festen Ort, zum Beispiel <code>C:\Tools\sw-status-report</code>. Darin liegen vier Dateien:</p>
+      <p>Entpacke <code>sw-status-report-0.9.1.zip</code> an einen festen Ort, zum Beispiel <code>C:\Tools\sw-status-report</code>. Darin liegen fünf Dateien:</p>
       <ul class="tight">
         <li><code>statusreport.pyz</code>: das eigentliche Tool, eine einzige Datei</li>
         <li><code>make_report.cmd</code>: der Startknopf, auf den du die Excel ziehst</li>
         <li><code>Tasks.xlsx</code>: eine leere Eingabe-Excel als Vorlage</li>
+        <li><code>Tutorial (Deutsch).html</code>: diese Anleitung</li>
         <li><code>README.md</code>: die englische Kurzreferenz</li>
       </ul>
       <p>Installiert wird nichts, und Adminrechte brauchst du nicht.</p>
@@ -318,6 +319,7 @@ footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
 <span class="dim">Tasks:        </span>22 in 3 version(s)
 <span class="dim">Thresholds:   </span>orange &gt; 10 pp, red &gt; 25 pp behind
 <span class="dim">History:      </span>6 snapshot(s), previous week 2026-W45 (2026-11-03); trend CW 40 .. CW 46 (7 week(s))
+<span class="dim">Burndown:     </span>614 h of 1,372 h remaining, ideal line to 2027-02-05
 
   Version 1.2.0         <mark>53 % (46 %)</mark>  <span class="g">GREEN</span>    15 task(s): 1 red, 4 orange, 9 green, 1 grey
   Version 2.0.0         23 % (20 %)  <span class="o">ORANGE</span>    4 task(s): 1 red, 1 green, 2 grey
@@ -327,7 +329,7 @@ footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
   <span class="o">warning</span> Tasks row 9: PRJ-205: no progress (no Progress %, no done state, no Spent/Estimate); not counted in version 1.2.0
   <span class="o">warning</span> Tasks row 22: PRJ-303: no progress (no Progress %, no done state, no Spent/Estimate); not counted in version 2.0.0
 
-Deck written: C:\Kunden\Falcon\<mark>Project Falcon Status 2026-W46.pptx</mark> (6 slides)
+Deck written: C:\Kunden\Falcon\<mark>Project Falcon Status 2026-W46.pptx</mark> (7 slides)
 Snapshot saved: C:\Kunden\Falcon\history\2026-W46.json
 
 <span class="g">Done.</span>
@@ -356,12 +358,23 @@ Drücken Sie eine beliebige Taste . . .</pre>
   <div class="part-head col">
     <div class="eyebrow">Teil 3</div>
     <h2>Die Folien lesen</h2>
-    <p class="col">Das Deck hat immer denselben Aufbau: Titelfolie, Trend, dann pro Softwareversion eine Tabelle. Wird eine Tabelle zu lang, geht sie auf einer Folgefolie weiter, zum Beispiel „Version 1.2.0 (1/2)“ und „(2/2)“.</p>
+    <p class="col">Das Deck hat immer denselben Aufbau: Titelfolie, Fortschritt pro Version, Burndown, dann pro Softwareversion eine Tabelle. Wird eine Tabelle zu lang, geht sie auf einer Folgefolie weiter, zum Beispiel „Version 1.2.0 (1/2)“ und „(2/2)“.</p>
   </div>
 
   <div class="grid2">
     <figure class="slide"><img src="img/title.png" alt="Titelfolie: Project Falcon, Status report, ACME Automotive, CW 46 / 2026, 10 Nov 2026"><figcaption>Titelfolie mit Projekt, Kunde, Kalenderwoche und Datum.</figcaption></figure>
     <figure class="slide"><img src="img/trend.png" alt="Liniendiagramm Progress over time, eine Linie pro Version von CW 40 bis CW 46"><figcaption>Fortschritt pro Version über die letzten Wochen. Das Diagramm ist in PowerPoint editierbar (Daten bearbeiten).</figcaption></figure>
+  </div>
+
+  <figure class="slide"><img src="img/burndown.png" alt="Burndown: Restaufwand in Stunden von CW 40 bis CW 46, gestrichelte Ideallinie bis 0 h in CW 05/27"><figcaption>Der Burndown über das ganze Projekt. So liest du ihn:</figcaption></figure>
+  <div class="col">
+    <dl class="read">
+      <dt>Durchgezogene Linie</dt><dd>Der Restaufwand aller Aufgaben mit Schätzung, in Stunden, Woche für Woche. Pro Aufgabe ist das Estimate × (1 − Fortschritt). Eine fertige Aufgabe zählt 0 h, eine nicht begonnene ihre volle Schätzung.</dd>
+      <dt>Gestrichelt: Ideal</dt><dd>Die gerade Linie vom ersten Wert auf 0 h am spätesten Due-Datum. Liegt die Ist-Linie darunter, ist das Team schneller als geplant, liegt sie darüber, langsamer.</dd>
+      <dt>Steigt die Linie?</dt><dd>Dann kamen Aufgaben dazu oder Schätzungen wurden erhöht, der Umfang ist also gewachsen.</dd>
+      <dt>Zeile unten</dt><dd>Restaufwand und Gesamtaufwand dieser Woche sowie das Enddatum der Ideallinie.</dd>
+    </dl>
+    <p class="note">Aufgaben ohne Estimate fehlen im Burndown. Hat keine einzige Aufgabe eine Schätzung, entfällt die Folie.</p>
   </div>
 
   <figure class="slide"><img src="img/table.png" alt="Tabelle Version 1.2.0 mit ID, Task, Progress (prev. week), Status und Comment"><figcaption>Eine Versionstabelle. So liest du die Spalten:</figcaption></figure>
@@ -512,7 +525,7 @@ Drücken Sie eine beliebige Taste . . .</pre>
   </div>
 </section>
 
-<footer class="col">SW Status Report 0.9.0 · Das Tool liest deine Excel nur und verändert sie nie.</footer>
+<footer class="col">SW Status Report 0.9.1 · Das Tool liest deine Excel nur und verändert sie nie.</footer>
 </div>
 
 <script>

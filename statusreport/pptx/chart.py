@@ -37,26 +37,40 @@ def line_chart_xml(
     categories: Sequence[str],
     series: Sequence[Series],
     workbook_rid: str,
-    y_max: float = 100,
-    y_step: float = 20,
+    y_max: Optional[float] = 100,
+    y_step: Optional[float] = 20,
     font_pt: float = 12,
+    value_format: str = '0" %"',
+    styles: Optional[Sequence[dict]] = None,
 ) -> bytes:
+    """Line chart. ``y_max``/``y_step`` None = PowerPoint chooses. ``styles`` per series:
+    ``{"color": "accent1" | "#RRGGBB", "dash": bool, "marker": bool}``."""
     n = len(categories)
     cat_ref = f"{SHEET}!$A$2:$A${n + 1}"
     sers = []
     for i, (name, values) in enumerate(series):
         col = col_letter(i + 1)
-        color = color_xml(f"accent{i % 6 + 1}")
+        style = (styles[i] if styles and i < len(styles) else None) or {}
+        color = color_xml(style.get("color", f"accent{i % 6 + 1}"))
+        dash = '<a:prstDash val="dash"/>' if style.get("dash") else ""
+        if style.get("marker", True):
+            marker = (
+                '<c:marker><c:symbol val="circle"/><c:size val="7"/>'
+                f'<c:spPr><a:solidFill>{color}</a:solidFill><a:ln w="9525"><a:solidFill>{color}</a:solidFill></a:ln></c:spPr></c:marker>'
+            )
+        else:
+            marker = '<c:marker><c:symbol val="none"/></c:marker>'
         sers.append(
             f'<c:ser><c:idx val="{i}"/><c:order val="{i}"/>'
             f"<c:tx><c:strRef><c:f>{SHEET}!${col}$1</c:f>{_str_cache([name])}</c:strRef></c:tx>"
-            f'<c:spPr><a:ln w="28575" cap="rnd"><a:solidFill>{color}</a:solidFill><a:round/></a:ln></c:spPr>'
-            '<c:marker><c:symbol val="circle"/><c:size val="7"/>'
-            f'<c:spPr><a:solidFill>{color}</a:solidFill><a:ln w="9525"><a:solidFill>{color}</a:solidFill></a:ln></c:spPr></c:marker>'
+            f'<c:spPr><a:ln w="28575" cap="rnd"><a:solidFill>{color}</a:solidFill>{dash}<a:round/></a:ln></c:spPr>'
+            f"{marker}"
             f"<c:cat><c:strRef><c:f>{cat_ref}</c:f>{_str_cache(categories)}</c:strRef></c:cat>"
             f"<c:val><c:numRef><c:f>{SHEET}!${col}$2:${col}${n + 1}</c:f>{_num_cache(values)}</c:numRef></c:val>"
             '<c:smooth val="0"/></c:ser>'
         )
+    y_max_xml = f'<c:max val="{y_max:g}"/>' if y_max is not None else ""
+    y_step_xml = f'<c:majorUnit val="{y_step:g}"/>' if y_step is not None else ""
     grid = '<c:spPr><a:ln w="9525"><a:solidFill><a:srgbClr val="D9D9D9"/></a:solidFill></a:ln></c:spPr>'
     axis_line = '<c:spPr><a:ln w="9525"><a:solidFill><a:srgbClr val="BFBFBF"/></a:solidFill></a:ln></c:spPr>'
     body = (
@@ -72,13 +86,13 @@ def line_chart_xml(
         f'{axis_line}<c:crossAx val="500000002"/><c:crosses val="autoZero"/><c:auto val="1"/>'
         '<c:lblAlgn val="ctr"/><c:lblOffset val="100"/><c:noMultiLvlLbl val="0"/></c:catAx>'
         '<c:valAx><c:axId val="500000002"/><c:scaling><c:orientation val="minMax"/>'
-        f'<c:max val="{y_max:g}"/><c:min val="0"/></c:scaling><c:delete val="0"/><c:axPos val="l"/>'
+        f'{y_max_xml}<c:min val="0"/></c:scaling><c:delete val="0"/><c:axPos val="l"/>'
         f"<c:majorGridlines>{grid}</c:majorGridlines>"
-        '<c:numFmt formatCode="0&quot; %&quot;" sourceLinked="0"/>'
+        f'<c:numFmt formatCode="{esc(value_format)}" sourceLinked="0"/>'
         '<c:majorTickMark val="none"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/>'
         '<c:spPr><a:ln><a:noFill/></a:ln></c:spPr>'
         '<c:crossAx val="500000001"/><c:crosses val="autoZero"/><c:crossBetween val="between"/>'
-        f'<c:majorUnit val="{y_step:g}"/></c:valAx>'
+        f"{y_step_xml}</c:valAx>"
         '<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln></c:spPr>'
         "</c:plotArea>"
         '<c:legend><c:legendPos val="b"/><c:overlay val="0"/></c:legend>'

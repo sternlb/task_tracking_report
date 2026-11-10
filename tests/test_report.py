@@ -227,7 +227,7 @@ class DemoTest(unittest.TestCase):
             deck = os.path.join(folder, "Project Falcon Status 2026-W46.pptx")
             pkg = opc.Package.open(deck)
             self.assertEqual(lint_package(pkg), [])
-            self.assertEqual(len(pkg.related(pkg.main_part(), opc.RT_SLIDE)), 6)
+            self.assertEqual(len(pkg.related(pkg.main_part(), opc.RT_SLIDE)), 7)  # incl. the burndown
             self.assertEqual(len(os.listdir(os.path.join(folder, "history"))), 7)
 
 

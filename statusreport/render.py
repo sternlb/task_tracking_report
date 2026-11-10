@@ -171,6 +171,25 @@ def _trend_slide(deck: Deck, layout: str, report: Report, footer: str) -> None:
     slide.add_line_chart(chart, report.trend_labels, report.trend_series)
 
 
+def _burndown_slide(deck: Deck, layout: str, report: Report, footer: str) -> None:
+    """R-OUT-10: remaining effort of all tasks per week, with the ideal line to the latest Due."""
+    bd = report.burndown
+    slide = deck.add_slide(layout, "content", footer)
+    _title(slide, labels.BURNDOWN_TITLE)
+    area = slide.content_area()
+    chart = Box(area.x, area.y, area.w, area.h - LEGEND_H)
+    slide.add_line_chart(
+        chart, bd.labels,
+        [(labels.BURNDOWN_ACTUAL, bd.actual), (labels.BURNDOWN_IDEAL, bd.ideal)],
+        y_max=None, y_step=None, value_format='#,##0" h"',
+        styles=[{"color": "accent1"}, {"color": "#7F7F7F", "dash": True, "marker": False}],
+    )
+    slide.add_textbox(
+        Box(area.x, area.y + area.h - LEGEND_H, area.w, LEGEND_H),
+        [Para([Run(report.burndown_note, 10, color=GREY_TEXT)])], anchor="b",
+    )
+
+
 def render(
     report: Report, deck: Deck, title_layout: str, content_layout: str, rows_per_slide: int, footer_text: str = ""
 ) -> Deck:
@@ -185,6 +204,8 @@ def render(
         s.add_textbox(Box(area.x, area.y, area.w, inch(0.6)), [Para([Run(report.subtitle, 18)])])
     if report.trend_series:
         _trend_slide(deck, content_layout, report, footer_text)
+    if report.burndown is not None:
+        _burndown_slide(deck, content_layout, report, footer_text)
     m = metrics(deck.content_area(deck.layout(content_layout, "content")), rows_per_slide)
     for table in report.tables:
         for page in paginate(table, m.per_page):

@@ -239,6 +239,16 @@ per version, y-axis 0–100 % fixed, x-axis `CW 41 … CW 46` (with the year whe
 crosses a year boundary), legend at the bottom. With only one snapshot the chart shows
 points instead of lines, plus a note "Trend builds up from next week".
 
+**Burndown (R-OUT-10, `burndown.py`):** title `Burndown: remaining effort`, line chart
+with automatic y-axis in `#,##0" h"`. Two series: `Remaining effort (h)` (accent1, with
+markers) for the past weeks with a snapshot, and `Ideal` (grey, dashed, no markers),
+linear in calendar time from the first actual value to 0 h on the Monday of the week of
+the latest Due. Future weeks up to that week (max. 26) are appended to the x-axis with
+gaps in the actual series. If the latest Due lies before the first week shown, there is
+no ideal line. A note line at the bottom gives the remaining and total hours and the
+end date. Snapshots carry `"effort": {"total_h", "remaining_h"}`; for older ones the
+value is derived (`derived_weeks`, shown in the console).
+
 **Version table:** title `Version 1.2.0` (continued: `Version 1.2.0 (2/3)`).
 
 | ID | Task | Progress (prev. week) | Status | Comment |

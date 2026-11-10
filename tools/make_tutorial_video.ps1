@@ -207,22 +207,23 @@ $lines = @(
     @('Report date:  2026-11-10 (CW 46/2026)', $TERMINK),
     @('Tasks:        22 in 3 version(s)', $TERMINK),
     @('History:      previous week 2026-W45; trend CW 40 .. CW 46', $TERMINK),
+    @('Burndown:     614 h of 1,372 h remaining', $TERMINK),
     @('', $TERMINK),
     @('  Version 1.2.0     53 % (46 %)  GREEN    15 task(s)', (RGB 111 208 138)),
     @('  Version 2.0.0     23 % (20 %)  ORANGE    4 task(s)', (RGB 255 194 77)),
     @('  Version 1.1.0    100 % (88 %)  GREEN     3 task(s)', (RGB 111 208 138)),
     @('', $TERMINK),
-    @('Deck written:   Project Falcon Status 2026-W46.pptx (6 slides)', $TERMINK),
+    @('Deck written:   Project Falcon Status 2026-W46.pptx (7 slides)', $TERMINK),
     @('Snapshot saved: history\2026-W46.json', $TERMINK),
     @('', $TERMINK),
     @('Done.', (RGB 111 208 138)))
-$y = 84
+$y = 82
 foreach ($ln in $lines) {
     if ($ln[0] -ne '') {
         $t = Add-Text $s $ln[0] 92 $y 780 20 14 $ln[1] $MONO
         [void](Reveal $s $t 0.28 0.15 $fxAppear)
     }
-    $y += 26
+    $y += 25
 }
 Caption $s 'Das Tool liest die Excel, rechnet die Ampeln, schreibt das Deck und merkt sich die Woche.'
 
@@ -236,7 +237,7 @@ foreach ($p in @($p1, $p2)) { $p.Line.Visible = -1; $p.Line.ForeColor.RGB = $LIN
 [void](Reveal $s $p1 0.3 0.5); [void](Reveal $s $p2 0.4 0.5)
 [void](Add-Text $s 'Titelfolie' 48 374 420 24 15 $MUTED)
 [void](Add-Text $s 'Fortschritt über die Wochen, eine Linie pro Version' 492 374 420 24 15 $MUTED)
-Caption $s 'Danach kommt pro Softwareversion eine Tabelle.'
+Caption $s 'Danach: der Burndown über alle Aufgaben, und pro Softwareversion eine Tabelle.'
 
 # ---- scene 7: reading the table ----------------------------------------------------------------
 $s = New-Scene 12

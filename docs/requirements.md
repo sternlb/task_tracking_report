@@ -138,7 +138,8 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 - **R-OUT-1 (M)** The deck shall contain, in this order:
   1. Title slide: project, customer, calendar week, report date
   2. One "Progress over time" slide
-  3. Per software version: one status table (continued on more slides if it has more
+  3. One burndown slide (R-OUT-10, added in 0.9.1)
+  4. Per software version: one status table (continued on more slides if it has more
      rows than the per-slide limit)
 - **R-OUT-2 (M)** The "Progress over time" slide shall show a native, editable
   PowerPoint line chart: x-axis = calendar weeks (the last N weeks with snapshots),
@@ -174,6 +175,15 @@ IDs are stable. Priority: **M** = must for v1, **S** = should, **C** = could.
 - **R-OUT-9 (M)** Default output file name: `<Project> Status <YYYY>-W<WW>.pptx` next to
   the input Excel. An existing file is replaced only with `--force`; otherwise a suffix is
   added.
+
+- **R-OUT-10 (M)** A burndown slide shall show the remaining effort in hours of all
+  tasks that have an estimate (remaining of a task = estimate × (1 − progress); no
+  progress counts as not started) for the same weeks as the progress chart. It also
+  shows an ideal line from the first value down to 0 h in the week of the latest Due
+  date, with the axis running into the future up to that week (at most 26 weeks).
+  Without any estimate the slide is left out. Snapshots store total and remaining
+  hours; for older snapshots the value is derived from the stored task progress and
+  today's estimates (decided 2026-11-10).
 
 ### 4.5 Operation
 

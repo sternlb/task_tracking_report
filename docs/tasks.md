@@ -197,6 +197,14 @@ Seen in the check, acceptable for now:
 - Lesson: PowerShell 5.1 `Set-Content -Encoding utf8` writes a BOM; a test now fails on
   that.
 
+## After M7
+
+- [x] T-8.1 German tutorial (offline HTML, real slides, traffic-light calculator) and an
+      80-second video built with PowerPoint
+- [x] T-8.2 Burndown slide over all tasks (R-OUT-10), version 0.9.1: effort stored in the
+      snapshots, derived for older ones; checked in PowerPoint on the base and on the
+      4:3 Facet template; 130 tests pass
+
 ## Order and estimate
 
 | Milestone | Effort (sessions) | Depends on |

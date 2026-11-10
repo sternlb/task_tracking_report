@@ -21,7 +21,7 @@ import zipfile
 from collections import Counter
 from typing import List, Optional
 
-from . import __version__, history, output, parse
+from . import __version__, burndown, history, output, parse
 from .calc import compute
 from .loader import InputError, load
 from .model import VersionStatus
@@ -164,6 +164,7 @@ def _run(args) -> int:
     current = history.snapshot_from(versions, s.report_date)
     prev = history.previous(snapshots, current.week)
     keys, axis, series = history.trend(snapshots, current, s.trend_weeks, [v.name for v in versions])
+    bd = burndown.build(snapshots, current, s.trend_weeks, result.tasks)
 
     week = s.report_date.isocalendar()
     print(f"Project:      {s.project or '-'} / {s.customer or '-'}")
@@ -174,6 +175,12 @@ def _run(args) -> int:
     print(f"Thresholds:   orange > {s.orange_pp:g} pp, red > {s.red_pp:g} pp behind")
     prev_text = f"previous week {prev.week} ({prev.report_date.isoformat()})" if prev else "no previous week yet"
     print(f"History:      {len(snapshots)} snapshot(s), {prev_text}; trend {axis[0]} .. {axis[-1]} ({len(keys)} week(s))")
+    if bd is None:
+        print("Burndown:     no task has an estimate - no burndown slide")
+    else:
+        end_text = f", ideal line to {bd.end.isoformat()}" if bd.end and any(v is not None for v in bd.ideal) else ""
+        derived = f" ({bd.derived_weeks} older week(s) derived from progress)" if bd.derived_weeks else ""
+        print(f"Burndown:     {bd.remaining_h:,.0f} h of {bd.total_h:,.0f} h remaining{end_text}{derived}")
 
     if args.check or args.verbose:
         _print_versions(versions, prev)
@@ -200,7 +207,7 @@ def _run(args) -> int:
     except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exc:
         print(f"\nerror: cannot use the template {template}: {exc}")
         return EXIT_FAILED
-    report = build_report(s, versions, prev, current.week, axis, series)
+    report = build_report(s, versions, prev, current.week, axis, series, bd)
     render(report, deck, s.title_layout, s.content_layout, s.rows_per_slide, s.footer_text)
     target = args.out or os.path.join(os.path.dirname(os.path.abspath(args.input)), output.default_name(s.project, current.week))
     target = output.free_path(target, args.force)

@@ -44,6 +44,9 @@ class Snapshot:
     report_date: dt.date
     versions: Dict[str, VersionSnap] = field(default_factory=dict)
     tasks: Dict[str, TaskSnap] = field(default_factory=dict)
+    # effort of all tasks with an estimate (R-OUT-10); None in snapshots written before 0.9.1
+    total_h: Optional[float] = None
+    remaining_h: Optional[float] = None
 
 
 # ---- weeks ------------------------------------------------------------------------------------------
@@ -74,12 +77,30 @@ def _round(value: Optional[float]) -> Optional[float]:
     return None if value is None else round(value, 2)
 
 
+def remaining_effort(tasks) -> Tuple[Optional[float], Optional[float]]:
+    """(total, remaining) hours over all tasks with an estimate.
+
+    Remaining of a task = estimate × (1 − progress); a task without progress counts
+    as not started. ``(None, None)`` if no task has an estimate.
+    """
+    total = remaining = 0.0
+    counted = False
+    for t in tasks:
+        if t.estimate_h and t.estimate_h > 0:
+            counted = True
+            total += t.estimate_h
+            remaining += t.estimate_h * (1 - (t.progress or 0.0) / 100.0)
+    return (total, remaining) if counted else (None, None)
+
+
 def snapshot_from(versions: Sequence[VersionStatus], report_date: dt.date) -> Snapshot:
     snap = Snapshot(week_key(report_date), report_date)
     for vs in versions:
         snap.versions[vs.name] = VersionSnap(_round(vs.progress), _round(vs.expected), vs.light)
         for t in vs.tasks:
             snap.tasks[t.id] = TaskSnap(t.version, t.title, _round(t.progress), t.light)
+    total, remaining = remaining_effort([t for vs in versions for t in vs.tasks])
+    snap.total_h, snap.remaining_h = _round(total), _round(remaining)
     return snap
 
 
@@ -97,6 +118,7 @@ def to_json(snap: Snapshot, generated_at: Optional[dt.datetime] = None) -> str:
             tid: {"version": t.version, "title": t.title, "progress": t.progress, "light": t.light}
             for tid, t in snap.tasks.items()
         },
+        "effort": {"total_h": snap.total_h, "remaining_h": snap.remaining_h},
     }
     return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
 
@@ -112,6 +134,8 @@ def from_json(text: str) -> Snapshot:
         snap.versions[name] = VersionSnap(v.get("progress"), v.get("expected"), v.get("light", "grey"))
     for tid, t in (data.get("tasks") or {}).items():
         snap.tasks[tid] = TaskSnap(t.get("version", ""), t.get("title", ""), t.get("progress"), t.get("light", "grey"))
+    effort = data.get("effort") or {}
+    snap.total_h, snap.remaining_h = effort.get("total_h"), effort.get("remaining_h")
     return snap
 
 
